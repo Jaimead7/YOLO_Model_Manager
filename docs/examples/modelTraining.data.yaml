@@ -1,0 +1,9 @@
+path: \\\path\to\dir
+task: detect
+train: train/images
+val: validation/images
+test: test/images
+nc: 2
+names:
+  0: "CLASS 1"
+  1: "CLASS 2"

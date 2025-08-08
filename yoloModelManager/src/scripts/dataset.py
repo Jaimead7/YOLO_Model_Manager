@@ -1,0 +1,73 @@
+from pathlib import Path
+
+import click
+from filesystem.dirsManagers import TrainingDatasetDirManager
+from utils.config import SCRIPTS_LOGGING_LVL
+from pyUtils import MyLogger
+
+my_logger = MyLogger(f'{__name__}', SCRIPTS_LOGGING_LVL)
+
+
+@click.command()
+@click.option(
+    '--data-source',
+    '-d',
+    'data_source',
+    type= click.Path(
+        readable= True,
+        writable= True,
+        path_type= Path
+    ),
+    required= True,
+    help= f'Path to the exported dataset from label-studio. Train/Validation/Test directories will be created on parent with name <data_source>_split.'
+)
+@click.option(
+    '--images',
+    '-i',
+    'images_source',
+    type= click.Path(
+        readable= True,
+        path_type= Path
+    ),
+    help= f'Path to the directory with the images.'
+)
+@click.option(
+    '--validation',
+    '-v',
+    'validation',
+    type= click.FloatRange(
+        min= 0,
+        max= 1,
+        min_open= True,
+        max_open= True
+    ),
+    default= 0.2,
+    help= '% of the images for validation. Default to 0.2.'
+)
+@click.option(
+    '--test',
+    '-t',
+    'test',
+    type= click.FloatRange(
+        min= 0,
+        max= 1,
+        min_open= True,
+        max_open= True
+    ),
+    default= 0.1,
+    help= '% of the images for test. Default to 0.1.'
+)
+def split_dataset(
+    data_source: Path,
+    images_source: Path,
+    validation: float = 0.2,
+    test: float = 0.1
+) -> None:
+    my_logger.debugLog(f'Executed: split-dataset -d {data_source} -i {images_source} -v {validation} -t {test}')
+    if validation + test > 0.5:
+        raise AttributeError('Validation + test ratio should be lower than 50% of the dataset')
+    dirManager: TrainingDatasetDirManager = TrainingDatasetDirManager(data_source)
+    if images_source is not None:
+        dirManager.sourceDatasetDir.addImages(images_source)
+    dirManager.split(validation= validation, test= test)
+    dirManager.createYamlDataFile()

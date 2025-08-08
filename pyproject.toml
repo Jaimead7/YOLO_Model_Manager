@@ -1,0 +1,58 @@
+[build-system]
+    requires = ["setuptools>=61.0.0", "wheel"]
+    build-backend = "setuptools.build_meta"
+
+[project]
+    name = "jaimead7-yolo-model-manager"
+    version = "0.0.1"
+    description = "Source code for training and executing custom YOLO models."
+    authors = [
+        {name = "Jaimead7", email = "alvarez.diaz.jaime1@gmail.com"},
+    ]
+    maintainers = [
+        {name = "Jaimead7", email = "alvarez.diaz.jaime1@gmail.com"},
+    ]
+    readme = {file = "README.md", content-type = "text/markdown"}
+    license = "MIT"
+    license-files = [
+        "LICENSE",
+    ]
+    keywords = [
+        "training",
+        "YOLO",
+        "vision",
+        "AI"
+    ]
+    classifiers = [
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+    ]
+    requires-python = ">=3.10, <3.12"
+    dependencies = [
+        "click >= 8.2.1",
+        "ultralytics[export] == 8.3.171",
+        "python-dotenv == 1.1.1",
+        "jaimead7-pyutils >= 0.0.15",
+        "wmi >= 1.5.1; sys_platform == 'win32'",
+    ]
+
+    [project.urls]
+        Homepage = "https://github.com/Jaimead7/AirbagCutInspection/trainingApp"
+        Repository = "https://github.com/Jaimead7/AirbagCutInspection"
+
+    [project.scripts]
+        image-adquisition = "scripts.camera:image_adquisition"
+        test-model = "scripts.model:test_model"
+        train-model = "scripts.model:train_model"
+        split-dataset = "scripts.dataset:split_dataset"
+
+[tool]
+    [tool.setuptools]
+        [tool.setuptools.packages]
+        find = {}
+        [tool.setuptools.package-data]
+            yoloModelManager = ["dist/config/*.toml"]
+    [tool.pytest.ini_options]
+        python_files = "test_*.py"
+        addopts = "--verbose"

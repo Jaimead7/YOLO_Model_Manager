@@ -1,0 +1,3 @@
+[model]
+    yolo_image_input_width = 640
+    yolo_image_input_height = 640
