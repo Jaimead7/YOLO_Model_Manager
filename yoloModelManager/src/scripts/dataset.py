@@ -63,11 +63,13 @@ def split_dataset(
     validation: float = 0.2,
     test: float = 0.1
 ) -> None:
-    my_logger.debugLog(f'Executed: split-dataset -d {data_source} -i {images_source} -v {validation} -t {test}')
+    my_logger.debug(f'Executed: split-dataset -d {data_source} -i {images_source} -v {validation} -t {test}')
     if validation + test > 0.5:
-        raise AttributeError('Validation + test ratio should be lower than 50% of the dataset')
+        msg: str = 'Validation + test ratio should be lower than 50% of the dataset.'
+        my_logger.error(f'AttributeError: {msg}')
+        raise AttributeError(msg)
     dirManager: TrainingDatasetDirManager = TrainingDatasetDirManager(data_source)
     if images_source is not None:
-        dirManager.sourceDatasetDir.addImages(images_source)
+        dirManager.source_dataset_dir.add_images(images_source)
     dirManager.split(validation= validation, test= test)
-    dirManager.createYamlDataFile()
+    dirManager.create_yaml_data_file()

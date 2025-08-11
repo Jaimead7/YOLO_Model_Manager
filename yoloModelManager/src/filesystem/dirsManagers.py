@@ -47,7 +47,7 @@ class DatasetDirManager:
     def get_labels_list(self) -> list[Path]:
         return [path for path in self.labels_path.rglob('*')]
 
-    def addData(
+    def add_data(
         self,
         images: list[Path],
         labels: list[Path]
@@ -60,14 +60,14 @@ class DatasetDirManager:
             if label.stem.endswith(image.stem)
         ]
         copy_files(labels, self.labels_path, labels_new_names)
-        my_logger.debugLog(f'Data added to "{self.path}".', Styles.SUCCEED)
+        my_logger.debug(f'Data added to "{self.path}".', Styles.SUCCEED)
 
-    def addImages(self, images_path: Path) -> None:
+    def add_images(self, images_path: Path) -> None:
         if not images_path.is_absolute():
             images_path = IMAGES_PATH / images_path
         if not images_path.is_dir():
             msg: str = f'"{images_path}" does not exists.'
-            my_logger.errorLog(msg)
+            my_logger.error(f'NotADirectoryError: {msg}')
             raise NotADirectoryError(msg)
         images: list[Path] = [
             file
@@ -77,7 +77,7 @@ class DatasetDirManager:
         copy_files(images, self.images_path)
         if (images_path / 'metadata.yaml').is_file():
             copy_files([images_path / 'metadata.yaml'], self.path)
-        my_logger.debugLog(f'Images copied from "{images_path}" to "{self.images_path}".', Styles.SUCCEED)
+        my_logger.debug(f'Images copied from "{images_path}" to "{self.images_path}".', Styles.SUCCEED)
 
 
 class TrainingDatasetDirManager:
@@ -107,7 +107,9 @@ class TrainingDatasetDirManager:
     @dataset_name.setter
     def dataset_name(self, value: str) -> None:
         if not isinstance(value, str):
-            raise TypeError(f'"{self.__class__.__name__}.dataset_name" should be an str.')
+            msg: str = f'"{self.__class__.__name__}.dataset_name" should be an str.'
+            my_logger.error(f'TypeError: {msg}')
+            raise TypeError(msg)
         self._dataset_name: str = value
         self.set_paths()
 
@@ -126,7 +128,7 @@ class TrainingDatasetDirManager:
             self.validation_dir: DatasetDirManager = DatasetDirManager(self.path / 'validation')
             self.test_dir: DatasetDirManager = DatasetDirManager(self.path / 'test')
         except AttributeError:
-            my_logger.warningLog('Can\'t set paths. No "source_dataset_dir" or "dataset_name".')
+            my_logger.warning('Can\'t set paths. No "source_dataset_dir" or "dataset_name".')
 
     def split(
         self,
@@ -154,12 +156,15 @@ class TrainingDatasetDirManager:
             shuffle_labels[:n_val], #Val
             shuffle_labels[n_val:n_val+n_test], #Test
         ]
-        self.train_dir.addData(images_lists[0], labels_lists[0])
-        self.validation_dir.addData(images_lists[1], labels_lists[1])
-        self.test_dir.addData(images_lists[2], labels_lists[2])
+        self.train_dir.add_data(images_lists[0], labels_lists[0])
+        self.validation_dir.add_data(images_lists[1], labels_lists[1])
+        self.test_dir.add_data(images_lists[2], labels_lists[2])
         if self.source_dataset_dir.metadata_path.is_file():
             copy_files([self.source_dataset_dir.metadata_path], self.path)
-        my_logger.debugLog(f'{self.source_dataset_dir.path.name} splited into {self.path.name}.', Styles.SUCCEED)
+        my_logger.debug(
+            f'{self.source_dataset_dir.path.name} splited into {self.path.name}.',
+            Styles.SUCCEED
+        )
 
     def create_yaml_data_file(self) -> None:
         classes_path: Path = self.source_dataset_dir.path / 'classes.txt'
@@ -181,4 +186,7 @@ class TrainingDatasetDirManager:
         }
         with open(self.data_yaml_file_path, 'w') as f:
             yaml.dump(data, f, sort_keys= False)
-        my_logger.debugLog(f'{self.data_yaml_file_path.name} created on {self.data_yaml_file_path.parent}.', Styles.SUCCEED)
+        my_logger.debug(
+            f'{self.data_yaml_file_path.name} created on {self.data_yaml_file_path.parent}.',
+            Styles.SUCCEED
+        )

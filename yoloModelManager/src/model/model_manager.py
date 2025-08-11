@@ -9,12 +9,12 @@ from ultralytics import YOLO
 from utils.config import MODEL_LOGGING_LVL, MODELS_PATH
 from pyUtils import MyLogger, Styles
 
-from .data import Model_Metadata_Dict
+from .data import ModelMetadataDict
 
 my_logger = MyLogger(f'{__name__}', MODEL_LOGGING_LVL)
 
 
-class Model_Manager:
+class ModelManager:
     def __init__(self, name: str) -> None:
         self.name = name
 
@@ -25,20 +25,26 @@ class Model_Manager:
     @name.setter
     def name(self, value: Any) -> None:
         if not isinstance(value, str):
-            raise TypeError(f'"{self.__class__.__name__}.name" should be a str.')
+            msg: str = f'"{self.__class__.__name__}.name" should be a str.'
+            my_logger.error(f'TypeError: {msg}')
+            raise TypeError(msg)
         path: Path = MODELS_PATH / value
         pt_model_path: Path = path / (value + '.pt')
         metadata_path: Path = path / 'metadata.yaml'
         if not path.is_dir():
-            raise NotADirectoryError(f'"{path}" does not exists.')
+            msg: str = f'"{path}" does not exists.'
+            my_logger.error(f'NotADirectoryError: {msg}')
+            raise NotADirectoryError(msg)
         if not pt_model_path.is_file() or not metadata_path.is_file():
-            raise FileExistsError(f'{path} structure error. The directory must contain "{value + ".pt"}" and "metadata.yaml".')
+            msg: str = f'{path} structure error. The directory must contain "{value + ".pt"}" and "metadata.yaml".'
+            my_logger.error(f'FileExistsError: {msg}')
+            raise FileExistsError(msg)
         self._name: str = value
         self._path: Path = path
         self._pt_model_path: Path = pt_model_path
         self._metadata_path: Path = metadata_path
-        self._exportModel2NCNN()
-        self._loadModel()
+        self._export_model_2_ncnn()
+        self._load_model()
 
     @property
     def path(self) -> Path:
@@ -72,32 +78,32 @@ class Model_Manager:
         ]
 
     @property
-    def metadata(self) -> Model_Metadata_Dict:
+    def metadata(self) -> ModelMetadataDict:
         with open(self._metadata_path, 'r') as f:
-            metadata: Model_Metadata_Dict = yaml.safe_load(f) #TODO: validate file
+            metadata: ModelMetadataDict = yaml.safe_load(f) #TODO: validate file
         return metadata
 
-    def _exportModel2NCNN(self) -> None:
+    def _export_model_2_ncnn(self) -> None:
         self.ncnn_model_path: Path = self.pt_model_path.with_name(self.pt_model_path.stem + '_ncnn_model')
-        if self._isValidNCNN(self.ncnn_model_path):
-            my_logger.warningLog(f'Model "{self.pt_model_path.stem}" not exported. NCNN model already exists.')
+        if self._is_valid_ncnn(self.ncnn_model_path):
+            my_logger.warning(f'Model "{self.pt_model_path.stem}" not exported. NCNN model already exists.')
             return
         model = YOLO(self.pt_model_path)
         model.export(format= 'ncnn') #FIXME: verbose= False
         self.pt_model_path.with_suffix('.torchscript').unlink()
         (self.ncnn_model_path / 'model_ncnn.py').unlink()
-        my_logger.debugLog(f'Model "{self.pt_model_path.stem}" exported to NCNN.', Styles.SUCCEED)
+        my_logger.debug(f'Model "{self.pt_model_path.stem}" exported to NCNN.', Styles.SUCCEED)
 
-    def _isValidNCNN(self, path: Path) -> bool:
+    def _is_valid_ncnn(self, path: Path) -> bool:
         if not path.is_dir():
             return False
-        filesList: list[str] = [
+        files_list: list[str] = [
             file.name
             for file in path.iterdir()
             if file.is_file()
         ]
         if not all(
-            file in filesList
+            file in files_list
             for file in (
                 'metadata.yaml',
                 'model.ncnn.bin',
@@ -107,14 +113,14 @@ class Model_Manager:
             return False
         return True
 
-    def _loadModel(self) -> None:
+    def _load_model(self) -> None:
         self.model = YOLO(
             self.ncnn_model_path,
             task= 'detect'
         )
-        my_logger.debugLog(f'Model "{self.ncnn_model_path.stem}" loaded.', Styles.SUCCEED)
+        my_logger.debug(f'Model "{self.ncnn_model_path.stem}" loaded.', Styles.SUCCEED)
 
-    def processFrame(self, frame: np.ndarray) -> np.ndarray:
+    def process_frame(self, frame: np.ndarray) -> list:
         frames: list[np.ndarray] = [frame]
         for filter in self.filters:
             frames.append(filter(frames[-1]))
@@ -123,5 +129,9 @@ class Model_Manager:
         self.last_input: np.ndarray = frame
         self.last_processed: np.ndarray = frames[-2]
         self.last_result: np.ndarray = frames[-1]
-        #TODO: change to return results
-        return ImageProcessing.get_images_grid([self.last_input, self.last_result])
+        return results
+
+    def get_last_result_image(self, source: bool = True) -> np.ndarray:
+        if source:
+            return ImageProcessing.get_images_grid([self.last_input, self.last_result])
+        return self.last_result

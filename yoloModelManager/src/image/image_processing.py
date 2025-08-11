@@ -134,10 +134,10 @@ class ImageProcessing:
         image_name: str = f'{uuid4()}.png'
         image_path: Path = dir_path / image_name
         if cv2.imwrite(str(image_path), image):
-            my_logger.debugLog(f'New image saved to "{image_path}"', Styles.SUCCEED)
+            my_logger.debug(f'New image saved to "{image_path}"', Styles.SUCCEED)
         else:
             msg: str = f'Failed to save image to "{image_path.parent}". Check if directory exists.'
-            my_logger.errorLog(msg)
+            my_logger.error(f'RuntimeError: {msg}')
             raise RuntimeError(msg)
         return image_path
 

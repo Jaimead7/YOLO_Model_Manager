@@ -2,9 +2,9 @@ from pathlib import Path
 from typing import Optional
 
 import click
-from cameras.cameraManager import CameraManager, camera_manager_factory
-from model.modelManager import ModelManager
-from utils.config import IMAGES_PATH, SCRIPTS_LOGGING_LVL
+from cameras.camera_manager import CameraManager, camera_manager_factory
+from model.model_manager import ModelManager
+from utils.config import SCRIPTS_LOGGING_LVL
 from pyUtils import MyLogger
 
 my_logger = MyLogger(f'{__name__}', SCRIPTS_LOGGING_LVL)
@@ -43,12 +43,12 @@ def test_model(
     camera: int,
     save_path: Optional[Path] = None
 ) -> None:
-    my_logger.debugLog(f'Executed: test-model -m {model_name} -c {camera} -p {save_path}')
-    cameraManager: CameraManager = camera_manager_factory(camera)
+    my_logger.debug(f'Executed: test-model -m {model_name} -c {camera} -p {save_path}')
+    camera_manager: CameraManager = camera_manager_factory(camera)
     model: ModelManager = ModelManager(model_name)
-    cameraManager.modelStream(
+    camera_manager.model_stream(
         model= model,
-        saveDirPath= save_path
+        save_dir_path= save_path
     )
 
 
@@ -67,5 +67,5 @@ def train_model(
     epochs: int,
     imgsz: int
 ) -> None:
-    my_logger.debugLog(f'Executed: train-model -m {base_model} -d {dataset} -e {epochs} -s {imgsz}')
-    ...
+    my_logger.debug(f'Executed: train-model -m {base_model} -d {dataset} -e {epochs} -s {imgsz}')
+    ... #TODO

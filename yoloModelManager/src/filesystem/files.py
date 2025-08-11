@@ -14,7 +14,7 @@ def copy_files(
 ) -> None:
     if not destiny_dir.is_dir():
         msg: str = f'"{destiny_dir}" does not exists.'
-        my_logger.errorLog(msg)
+        my_logger.error(f'NotADirectoryError: {msg}')
         raise NotADirectoryError(msg)
     if new_names is None:
         new_names = [file.name for file in files_list]
@@ -22,6 +22,6 @@ def copy_files(
     for source, destiny in zip(files_list, destiny_files):
         if source.is_file():
             copy2(source, destiny)
-            my_logger.debugLog(f'"{source.name}" copied to "{destiny}".', Styles.SUCCEED)
+            my_logger.debug(f'"{source.name}" copied to "{destiny}".', Styles.SUCCEED)
         else:
-            my_logger.warningLog(f'"{source}" won\'t be copied. File doesn\'t exists.')
+            my_logger.warning(f'"{source}" won\'t be copied. File doesn\'t exists.')

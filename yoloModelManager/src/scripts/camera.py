@@ -57,15 +57,15 @@ def image_adquisition(
     save_filters_in: Optional[str] = None,
     save_path: Optional[Path] = None
 ) -> None:
-    my_logger.debugLog(f'Executed: image-adquisition -c {camera} -f {show_filters_in} -s {save_filters_in} -p {save_path}')
-    showFilters: list[Callable] = [ImageProcessing.FILTERS[filter] for filter in show_filters_in]
+    my_logger.debug(f'Executed: image-adquisition -c {camera} -f {show_filters_in} -s {save_filters_in} -p {save_path}')
+    show_filters: list[Callable] = [ImageProcessing.FILTERS[filter] for filter in show_filters_in]
     if save_filters_in is None:
-        saveFilters: Optional[list[Callable]] = None
+        save_filters: Optional[list[Callable]] = None
     else:
-        saveFilters: Optional[list[Callable]] = [ImageProcessing.FILTERS[filter] for filter in save_filters_in]
-    cameraManager: CameraManager = camera_manager_factory(camera)
-    cameraManager.videoStream(
-        showFilters= showFilters,
-        saveFilters= saveFilters,
-        saveDirPath= save_path
+        save_filters: Optional[list[Callable]] = [ImageProcessing.FILTERS[filter] for filter in save_filters_in]
+    camera_manager: CameraManager = camera_manager_factory(camera)
+    camera_manager.video_stream(
+        show_filters= show_filters,
+        save_filters= save_filters,
+        save_dir_path= save_path
     )

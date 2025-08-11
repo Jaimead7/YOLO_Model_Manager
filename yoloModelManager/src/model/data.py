@@ -10,7 +10,7 @@ from pyUtils import MyLogger, Styles
 my_logger = MyLogger(f'{__name__}', MODEL_LOGGING_LVL)
 
 
-class Model_Tasks(Enum):
+class ModelTasks(Enum):
     DETECT = 'detect'
     SEGMENT = 'segment'
     CLASSIFY = 'classify'
@@ -19,7 +19,7 @@ class Model_Tasks(Enum):
 
 class ModelTrainingDataDict(TypedDict):
     path: str
-    task: Model_Tasks
+    task: ModelTasks
     train: str
     val: str
     test: str
@@ -42,13 +42,13 @@ def create_model_medatada_yaml(
 ) -> None:
     if dir_path is None:
         dir_path = IMAGES_PATH
-    filePath: Path = dir_path / 'metadata.yaml'
+    file_path: Path = dir_path / 'metadata.yaml'
     data: ModelMetadataDict = {
         'date': datetime.now(timezone.utc),
         'camera_width': width,
         'camera_height': height,
         'filters': filters
     }
-    with open(filePath, 'w') as f:
+    with open(file_path, 'w') as f:
         yaml.dump(data, f, sort_keys= False)
-    my_logger.debugLog(f'{filePath.name} created on {filePath.parent}.', Styles.SUCCEED)
+    my_logger.debug(f'{file_path.name} created on {file_path.parent}.', Styles.SUCCEED)

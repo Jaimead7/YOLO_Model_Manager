@@ -60,7 +60,6 @@ CAMERA_LOGGING_LVL: int = _get_logging_lvl_from_env(EnvVars.CAMERA_LOGGING_LVL.v
 cv2.setLogLevel(0) #Default 3
 logging.getLogger('ultralytics').setLevel(logging.WARNING)
 
-print(TIMING_LOGGING_LVL)
 # LISTS
 ALLOWED_IMAGES_EXTENSIONS: set[str] = {
     '.png',
