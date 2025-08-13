@@ -4,8 +4,9 @@ from pathlib import Path
 from typing import Optional, TypedDict
 
 import yaml
-from utils.config import IMAGES_PATH, MODEL_LOGGING_LVL
 from pyUtils import MyLogger, Styles
+
+from ..utils import IMAGES_PATH, MODEL_LOGGING_LVL
 
 my_logger = MyLogger(f'{__name__}', MODEL_LOGGING_LVL)
 

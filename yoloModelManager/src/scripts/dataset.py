@@ -1,9 +1,10 @@
 from pathlib import Path
 
 import click
-from filesystem.dirsManagers import TrainingDatasetDirManager
-from utils.config import SCRIPTS_LOGGING_LVL
 from pyUtils import MyLogger
+
+from ..filesystem import TrainingDatasetDirManager
+from ..utils import SCRIPTS_LOGGING_LVL
 
 my_logger = MyLogger(f'{__name__}', SCRIPTS_LOGGING_LVL)
 

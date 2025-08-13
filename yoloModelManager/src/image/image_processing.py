@@ -5,9 +5,10 @@ from uuid import uuid4
 
 import cv2
 import numpy as np
-from utils.config import (IMAGE_LOGGING_LVL, IMAGES_PATH, YOLO_IMAGE_HEIGHT,
-                          YOLO_IMAGE_WIDTH)
 from pyUtils import MyLogger, Styles
+
+from ..utils import (IMAGE_LOGGING_LVL, IMAGES_PATH, YOLO_IMAGE_HEIGHT,
+                     YOLO_IMAGE_WIDTH)
 
 my_logger = MyLogger(f'{__name__}', IMAGE_LOGGING_LVL)
 

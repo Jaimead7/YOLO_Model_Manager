@@ -42,10 +42,10 @@
         Repository = "https://github.com/Jaimead7/AirbagCutInspection"
 
     [project.scripts]
-        image-adquisition = "scripts.camera:image_adquisition"
-        test-model = "scripts.model:test_model"
-        train-model = "scripts.model:train_model"
-        split-dataset = "scripts.dataset:split_dataset"
+        image-adquisition = "yoloModelManager.src.scripts.camera:image_adquisition"
+        test-model = "yoloModelManager.src.scripts.model:test_model"
+        train-model = "yoloModelManager.src.scripts.model:train_model"
+        split-dataset = "yoloModelManager.src.scripts.dataset:split_dataset"
 
 [tool]
     [tool.setuptools]

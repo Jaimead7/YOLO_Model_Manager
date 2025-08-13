@@ -4,10 +4,11 @@ from typing import Any, Callable
 
 import numpy as np
 import yaml
-from image.image_processing import ImageProcessing
 from ultralytics import YOLO
-from utils.config import MODEL_LOGGING_LVL, MODELS_PATH
 from pyUtils import MyLogger, Styles
+
+from ..image import ImageProcessing
+from ..utils import MODEL_LOGGING_LVL, MODELS_PATH
 
 from .data import ModelMetadataDict
 

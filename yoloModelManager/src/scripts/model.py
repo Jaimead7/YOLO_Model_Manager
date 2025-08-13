@@ -2,10 +2,11 @@ from pathlib import Path
 from typing import Optional
 
 import click
-from cameras.camera_manager import CameraManager, camera_manager_factory
-from model.model_manager import ModelManager
-from utils.config import SCRIPTS_LOGGING_LVL
 from pyUtils import MyLogger
+
+from ..cameras import CameraManager, camera_manager_factory
+from ..model import ModelManager
+from ..utils import SCRIPTS_LOGGING_LVL
 
 my_logger = MyLogger(f'{__name__}', SCRIPTS_LOGGING_LVL)
 

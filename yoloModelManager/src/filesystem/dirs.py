@@ -3,8 +3,9 @@ import zipfile
 from pathlib import Path
 from typing import Any, Literal
 
-from utils.config import FILESYSTEM_LOGGING_LVL
 from pyUtils import MyLogger, Styles
+
+from ..utils import FILESYSTEM_LOGGING_LVL
 
 my_logger = MyLogger(f'{__name__}', FILESYSTEM_LOGGING_LVL)
 

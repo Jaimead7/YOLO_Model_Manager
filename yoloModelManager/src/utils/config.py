@@ -21,25 +21,25 @@ class EnvVars(Enum):
     CAMERA_LOGGING_LVL = 'CAMERA_LOGGING_LVL'
 
 
-_MY_PACKAGE: ProjectPathsDict = ProjectPathsDict().setAppPath(Path(__file__).parents[3])
-_MY_PACKAGE[ProjectPathsDict.DIST_PATH] = _MY_PACKAGE[ProjectPathsDict.APP_PATH] / 'yoloModelManager' / 'dist'
+_MY_PACKAGE: ProjectPathsDict = ProjectPathsDict().set_app_path(Path(__file__).parents[2])
+_MY_PACKAGE[ProjectPathsDict.DIST_PATH] = _MY_PACKAGE[ProjectPathsDict.APP_PATH] / 'dist'
 _MY_PACKAGE[ProjectPathsDict.CONFIG_PATH] = _MY_PACKAGE[ProjectPathsDict.DIST_PATH] / 'config'
 _MY_PACKAGE[ProjectPathsDict.CONFIG_FILE_PATH] = _MY_PACKAGE[ProjectPathsDict.CONFIG_PATH] / 'config.toml'
 _MY_CFG: ConfigFileManager = ConfigFileManager(_MY_PACKAGE[ProjectPathsDict.CONFIG_FILE_PATH])
-load_dotenv(dotenv_path= _MY_PACKAGE[ProjectPathsDict.APP_PATH] / '.env')
+load_dotenv(dotenv_path= _MY_PACKAGE[ProjectPathsDict.DIST_PATH] / '.env')
 
 # DEFAULT PATHS
 IMAGES_PATH: Path = Path(getenv(
     EnvVars.IMAGES_PATH.value,
-    _MY_PACKAGE[ProjectPathsDict.APP_PATH] / 'images'
+    _MY_PACKAGE[ProjectPathsDict.DIST_PATH] / 'images'
 ))
 MODELS_PATH: Path = Path(getenv(
     EnvVars.MODELS_PATH.value,
-    _MY_PACKAGE[ProjectPathsDict.APP_PATH] / 'models'
+    _MY_PACKAGE[ProjectPathsDict.DIST_PATH] / 'models'
 ))
 DATASETS_PATH: Path = Path(getenv(
     EnvVars.DATASETS_PATH.value,
-    _MY_PACKAGE[ProjectPathsDict.APP_PATH] / 'datasets'
+    _MY_PACKAGE[ProjectPathsDict.DIST_PATH] / 'datasets'
 ))
 YOLO_IMAGE_WIDTH: int = _MY_CFG.model.yolo_image_input_width
 YOLO_IMAGE_HEIGHT: int = _MY_CFG.model.yolo_image_input_height

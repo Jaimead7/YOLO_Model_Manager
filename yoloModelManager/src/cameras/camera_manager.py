@@ -9,11 +9,12 @@ from typing import Any, Callable, Generator, Optional, TypedDict
 
 import cv2
 import numpy as np
-from image.image_processing import ImageProcessing
-from model.data import create_model_medatada_yaml
-from model.model_manager import ModelManager
-from utils.config import CAMERA_LOGGING_LVL
 from pyUtils import MyLogger, time_me
+
+from ..image.image_processing import ImageProcessing
+from ..model.data import create_model_medatada_yaml
+from ..model.model_manager import ModelManager
+from ..utils.config import CAMERA_LOGGING_LVL
 
 my_logger = MyLogger(f'{__name__}', CAMERA_LOGGING_LVL)
 
@@ -173,6 +174,7 @@ class CameraManager(ABC):
         self.set_camera_resolution(width, height)
         self.reset_window_to_camera_resolution()
         with self.get_video_capture() as cap:
+            my_logger.debug('Starting video stream.')
             while True:
                 ret: bool
                 frame: np.ndarray
@@ -218,6 +220,7 @@ class CameraManager(ABC):
         self.set_camera_resolution(model.camera_width, model.camera_height)
         self.reset_window_to_camera_resolution()
         with self.get_video_capture() as cap:
+            my_logger.debug('Starting video stream.')
             while True:
                 ret: bool
                 frame: np.ndarray
@@ -248,7 +251,7 @@ class WindowsCameraManager(CameraManager):
     @staticmethod
     @time_me
     def get_cameras_info() -> list[dict]:
-        import wmi
+        import wmi # type: ignore
         cameras: list[dict] = []
         for device in wmi.WMI().query('SELECT * FROM Win32_PnPEntity'):
             if device.PNPClass == 'Camera':
@@ -346,7 +349,7 @@ class LinuxCamerasManager(CameraManager):
                 key, val = line.split(':', 1)
                 key = key.strip()
                 val = val.strip()
-                if section:
+                if section: # type: ignore
                     camera_details[section][key] = val
                 else:
                     camera_details[key] = val

@@ -32,8 +32,15 @@ pip install .
 ```
 
 ### Crate environment variables:  
-Create `<repoDir>/.env` env file.  
-Check the structure of the file in [**`example.env`**](./docs/examples/example.env).
+Create [`./yoloModelManager/dist/.env`](./yoloModelManager/dist/) env file.  
+Check the structure of the file in [**`example.env`**](./docs/examples/example.env).  
+Environment variables can be loaded before importing anything from the package. If .env is set on the /dist folder of the package, the variables will be override.  
+#### Example:
+```python
+from dotenv import load_dotenv
+load_dotenv('example/path/.env')
+from yoloModelManager.utils import *
+```
 
 ## Usage:
 Activate the virtual environment before using any scripts.  
