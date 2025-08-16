@@ -1,7 +1,11 @@
 # Directories Managers
-Documentation for [dirs_managers.py](../../../src/filesystem/dirs_managers.py)
+Documentation for [dirs_managers.py](../../../yoloModelManager/src/filesystem/dirs_managers.py)
+- [DatasetDirManager](#datasetdirmanager)
+-  [TrainingDirManager](#trainingdirmanager)
 
-## Dataset_Dir_Manager class
+<br>
+
+## DatasetDirManager
 Class for managing a directory containing labeled images.  
 This follows the directory structure exported by label-studio.  
 ### Directory structure
@@ -33,7 +37,7 @@ Image_Dir
 > Whether to create the directory when ```path``` is setted.  
 ### Methods
 - **__init__(path: Path, create: bool = True)** -> *None*
-> Create the [**Dataset_Dir_Manager**](#dataset_dir_manager-class) object with the ```path``` dir.  
+> Create the [**DatasetDirManager**](#datasetdirmanager) object with the ```path``` dir.  
 If ```create```, create the directory if it doesn't exists.  
 - **get_images_list()** -> *list[Path]*  
 > List of the absolute paths of the images files in th images dir.  
@@ -46,8 +50,8 @@ If ```create```, create the directory if it doesn't exists.
 
 <br>
 
-## TrainingDirManager class
-Class for managing a directory containing three [**Dataset_Dir_Manager**](#dataset_dir_manager-class).  
+## TrainingDirManager
+Class for managing a directory containing three [**DatasetDirManager**](#datasetdirmanager).  
 Each of this directories  contains the corresponding train, validation and test images and labels.  
 The directory has a ```.yaml``` file with key data for training the model.  
 A complete dataset for training a model.  
@@ -90,8 +94,8 @@ TrainingDir
 
 ### Attributes
 - **source_dataset_dir**: *DatasetDirManager*  
-> [**DatasetDirManager**](#datasetdirmanager-class) object for the source data.  
-> The ```setter``` admits a ```str | Path``` object and creates the [**DatasetDirManager**](#datasetdirmanager-class) object (It doesn\`t creates the directory if it doesn\`t exists).  
+> [**DatasetDirManager**](#datasetdirmanager) object for the source data.  
+> The ```setter``` admits a ```str | Path``` object and creates the [**DatasetDirManager**](#datasetdirmanager) object (It doesn\`t creates the directory if it doesn\`t exists).  
 > If the directory is a zip directory it will unzip it.  
 > Supported extensions: ```.zip```, ```.tar```, ```.gz```, ```.bz2```, ```.xz```.  
 - **dataset_name**: *str*
@@ -101,12 +105,12 @@ TrainingDir
 - **path**: *Path*  
 > Absolute path of the dir.  
 > The default value is: ```<source_dataset_path>.parent / <datasetName>```.  
-- **train_dir**: *[DatasetDirManager](#datasetdirmanager-class)*  
-> [**DatasetDirManager**](#datasetdirmanager-class) object for the train subdir.  
-- **validation_dir**: *[DatasetDirManager](#datasetdirmanager-class)*  
-> [**DatasetDirManager**](#datasetdirmanager-class) object for the validation subdir.  
-- **test_dir**: *[DatasetDirManager](#datasetdirmanager-class)*  
-> [**DatasetDirManager**](#datasetdirmanager-class) object for the tests subdir.  
+- **train_dir**: *[DatasetDirManager](#datasetdirmanager)*  
+> [**DatasetDirManager**](#datasetdirmanager) object for the train subdir.  
+- **validation_dir**: *[DatasetDirManager](#datasetdirmanager)*  
+> [**DatasetDirManager**](#datasetdirmanager) object for the validation subdir.  
+- **test_dir**: *[DatasetDirManager](#datasetdirmanager)*  
+> [**DatasetDirManager**](#datasetdirmanager) object for the tests subdir.  
 - **data_yaml_file_path**: *Path*  
 > Absolute path of the ```data.yaml``` file.  
 - **metadata_yaml_file_path**: *Path*  

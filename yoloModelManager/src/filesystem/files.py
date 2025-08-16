@@ -2,10 +2,19 @@ from pathlib import Path
 from shutil import copy2
 from typing import Optional
 
-from utils.config import FILESYSTEM_LOGGING_LVL
 from pyUtils import MyLogger, Styles
+from utils.config import FILESYSTEM_LOGGING_LVL
 
 my_logger = MyLogger(f'{__name__}', FILESYSTEM_LOGGING_LVL)
+
+ALLOWED_IMAGES_EXTENSIONS: set[str] = {
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.bmp',
+    '.gif',
+    '.tiff'
+}
 
 def copy_files(
     files_list: list[Path],

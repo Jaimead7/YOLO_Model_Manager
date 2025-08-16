@@ -6,7 +6,7 @@ from pathlib import Path
 import cv2
 import ultralytics  # Needed for setting log level
 from dotenv import load_dotenv
-from pyUtils import ProjectPathsDict, ConfigFileManager, MyLogger
+from pyUtils import ConfigFileManager, MyLogger, ProjectPathsDict
 
 
 class EnvVars(Enum):
@@ -26,7 +26,10 @@ _MY_PACKAGE[ProjectPathsDict.DIST_PATH] = _MY_PACKAGE[ProjectPathsDict.APP_PATH]
 _MY_PACKAGE[ProjectPathsDict.CONFIG_PATH] = _MY_PACKAGE[ProjectPathsDict.DIST_PATH] / 'config'
 _MY_PACKAGE[ProjectPathsDict.CONFIG_FILE_PATH] = _MY_PACKAGE[ProjectPathsDict.CONFIG_PATH] / 'config.toml'
 _MY_CFG: ConfigFileManager = ConfigFileManager(_MY_PACKAGE[ProjectPathsDict.CONFIG_FILE_PATH])
-load_dotenv(dotenv_path= _MY_PACKAGE[ProjectPathsDict.DIST_PATH] / '.env')
+load_dotenv(
+    dotenv_path= _MY_PACKAGE[ProjectPathsDict.DIST_PATH] / '.env',
+    override= False
+)
 
 # DEFAULT PATHS
 IMAGES_PATH: Path = Path(getenv(
@@ -41,6 +44,8 @@ DATASETS_PATH: Path = Path(getenv(
     EnvVars.DATASETS_PATH.value,
     _MY_PACKAGE[ProjectPathsDict.DIST_PATH] / 'datasets'
 ))
+
+# CONSTANTS
 YOLO_IMAGE_WIDTH: int = _MY_CFG.model.yolo_image_input_width
 YOLO_IMAGE_HEIGHT: int = _MY_CFG.model.yolo_image_input_height
 
@@ -59,13 +64,3 @@ MODEL_LOGGING_LVL: int = _get_logging_lvl_from_env(EnvVars.MODEL_LOGGING_LVL.val
 CAMERA_LOGGING_LVL: int = _get_logging_lvl_from_env(EnvVars.CAMERA_LOGGING_LVL.value)
 cv2.setLogLevel(0) #Default 3
 logging.getLogger('ultralytics').setLevel(logging.WARNING)
-
-# LISTS
-ALLOWED_IMAGES_EXTENSIONS: set[str] = {
-    '.png',
-    '.jpg',
-    '.jpeg',
-    '.bmp',
-    '.gif',
-    '.tiff'
-}

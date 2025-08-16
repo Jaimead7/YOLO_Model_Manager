@@ -24,21 +24,21 @@ def unzip_dir(dir: Path) -> Path:
     extension: str = suffixes[-1].lower()
     new_path: Path = dir.parent / dir.stem
     if extension == '.zip':
-        uzip(dir, new_path)
+        _uzip(dir, new_path)
     elif extension in ('.tar', '.gz', '.bz2', '.xz'):
-        utar(dir, new_path)
+        _utar(dir, new_path)
     else:
         msg: str = f'File extension not supported: "{extension}".'
         my_logger.error(f'ValueError: {msg}')
         raise ValueError(msg)
     return new_path
 
-def uzip(file: Path, path: Path) -> None:
+def _uzip(file: Path, path: Path) -> None:
     with zipfile.ZipFile(file, 'r') as f:
         f.extractall(path)
     my_logger.debug(f'{file.name} extracted in {path}.', Styles.SUCCEED)
 
-def utar(file: Path, path: Path) -> None:
+def _utar(file: Path, path: Path) -> None:
     modes: dict[str, Literal['r', 'r:gz', 'r:bz2', 'r:xz']] = {
         '.tar': 'r',
         '.gz': 'r:gz',

@@ -5,11 +5,10 @@ from typing import Any
 import yaml
 from pyUtils import MyLogger, Styles
 
-from .dirs import check_dir_path, unzip_dir
-from .files import copy_files
 from ..model import ModelTasks, ModelTrainingDataDict
-from ..utils import (ALLOWED_IMAGES_EXTENSIONS, DATASETS_PATH,
-                     FILESYSTEM_LOGGING_LVL, IMAGES_PATH)
+from ..utils import DATASETS_PATH, FILESYSTEM_LOGGING_LVL, IMAGES_PATH
+from .dirs import check_dir_path, unzip_dir
+from .files import ALLOWED_IMAGES_EXTENSIONS, copy_files
 
 my_logger = MyLogger(f'{__name__}', FILESYSTEM_LOGGING_LVL)
 
