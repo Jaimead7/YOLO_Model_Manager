@@ -31,9 +31,9 @@
     requires-python = ">=3.10, <3.12"
     dependencies = [
         "click >= 8.2.1",
-        "ultralytics[export] == 8.3.171",
-        "python-dotenv == 1.1.1",
-        "jaimead7-pyutils >= 0.0.15",
+        "ultralytics[export] >= 8.3.179",
+        "python-dotenv >= 1.1.1",
+        "jaimead7-pyutils >= 0.1.0",
         "wmi >= 1.5.1; sys_platform == 'win32'",
     ]
 
