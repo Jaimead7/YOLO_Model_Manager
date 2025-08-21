@@ -20,7 +20,6 @@ class EnvVars(Enum):
     MODEL_LOGGING_LVL = 'MODEL_LOGGING_LVL'
     CAMERA_LOGGING_LVL = 'CAMERA_LOGGING_LVL'
 
-
 _MY_PACKAGE: ProjectPathsDict = ProjectPathsDict().set_app_path(Path(__file__).parents[2])
 _MY_PACKAGE[ProjectPathsDict.DIST_PATH] = _MY_PACKAGE[ProjectPathsDict.APP_PATH] / 'dist'
 _MY_PACKAGE[ProjectPathsDict.CONFIG_PATH] = _MY_PACKAGE[ProjectPathsDict.DIST_PATH] / 'config'

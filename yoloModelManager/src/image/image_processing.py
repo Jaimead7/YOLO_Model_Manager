@@ -47,12 +47,8 @@ class ImageProcessing:
     def add_border(
         frame: np.ndarray,
         width: int = 1,
-        color: int | list = 255
+        color: tuple[int, int, int, int] = (255, 255, 255, 255)
     ) -> np.ndarray:
-        if len(frame.shape) == 3 and isinstance(color, int):
-            color = [color, color, color]
-        if len(frame.shape) == 1 and isinstance(color, list):
-            color = color[0]
         return cv2.copyMakeBorder(
             frame,
             width,
@@ -93,12 +89,8 @@ class ImageProcessing:
         image: np.ndarray,
         target_height: int,
         target_width: int,
-        color: int | list = 0
+        color: tuple[int, int, int, int] = (255, 255, 255, 255)
     ) -> np.ndarray:
-        if len(image.shape) == 3 and isinstance(color, int):
-            color = [color, color, color]
-        if len(image.shape) == 1 and isinstance(color, list):
-            color = color[0]
         height: int
         width: int
         height, width = image.shape[:2]

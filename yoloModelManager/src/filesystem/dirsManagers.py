@@ -1,12 +1,12 @@
 from pathlib import Path
 from random import shuffle
-from typing import Any
+from typing import Any, Optional
 
 import yaml
 from pyUtils import MyLogger, Styles
 
-from ..model import ModelTasks, ModelTrainingDataDict
-from ..utils import DATASETS_PATH, FILESYSTEM_LOGGING_LVL, IMAGES_PATH
+from ..utils import (DATASETS_PATH, FILESYSTEM_LOGGING_LVL, IMAGES_PATH,
+                     ModelMetadataDict, ModelTasks, ModelTrainingDataDict)
 from .dirs import check_dir_path, unzip_dir
 from .files import ALLOWED_IMAGES_EXTENSIONS, copy_files
 
@@ -39,6 +39,16 @@ class DatasetDirManager:
     @property
     def metadata_path(self) -> Path:
         return self.path / 'metadata.yaml'
+
+    def __repr__(self) -> str:
+        return (f'{self.__class__.__name__}(\n'
+                f'  • path= "{self.path}"",\n'
+                f'  • images_path= "{self.images_path}",\n'
+                f'  • labels_path= "{self.labels_path}",\n'
+                f'  • metadata_path= "{self.metadata_path}"\n)')
+
+    def __str__(self) -> str:
+        return (f'{self.__class__.__name__}("{self.path}")')
 
     def get_images_list(self) -> list[Path]:
         return [path for path in self.images_path.rglob('*')]
@@ -82,35 +92,54 @@ class DatasetDirManager:
 class TrainingDatasetDirManager:
     def __init__(
         self,
-        source_dataset_dir: str | Path,
+        dataset_dir: Optional[str | Path] = None,
+        source_dataset_dir: Optional[str | Path] = None
     ) -> None:
-        self.source_dataset_dir = Path(source_dataset_dir)
+        if dataset_dir is not None:
+            self.path = Path(dataset_dir)
+            self.set_paths()
+            return
+        if source_dataset_dir is not None:
+            self.source_dataset_dir = Path(source_dataset_dir)
+            name: str = self.source_dataset_dir.path.stem + '_split'
+            self.path = self.source_dataset_dir.path.parent / name
+            self.create_paths()
+            return
+        msg: str = f'"dataset_dir" or "source_dataset_dir" needs to be defined.'
+        my_logger.error(f'AttributeError: {msg}')
+        raise AttributeError(msg)
 
     @property
     def source_dataset_dir(self) -> DatasetDirManager:
-        return self._source_dataset_dir
+        if self._source_dataset_dir is not None:
+            return self._source_dataset_dir
+        msg: str = f'"source_dataset_dir" is not defined.'
+        my_logger.error(f'AttributeError: {msg}')
+        raise AttributeError(msg)
 
     @source_dataset_dir.setter
     def source_dataset_dir(self, path: Path) -> None:
         if not path.is_absolute():
             path = DATASETS_PATH / path
         path = unzip_dir(path)
-        self._source_dataset_dir = DatasetDirManager(path, create= False)
-        self.dataset_name = path.stem + '_split'
-        self.set_paths()
+        self._source_dataset_dir: Optional[DatasetDirManager] = DatasetDirManager(
+            path,
+            create= False
+        )
+
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    @path.setter
+    def path(self, path: Path) -> None:
+        if not path.is_absolute():
+            path = DATASETS_PATH / path
+        self._path: Path = path
 
     @property
     def dataset_name(self) -> str:
-        return self._dataset_name
-
-    @dataset_name.setter
-    def dataset_name(self, value: str) -> None:
-        if not isinstance(value, str):
-            msg: str = f'"{self.__class__.__name__}.dataset_name" should be an str.'
-            my_logger.error(f'TypeError: {msg}')
-            raise TypeError(msg)
-        self._dataset_name: str = value
-        self.set_paths()
+        return self.path.stem
 
     @property
     def data_yaml_file_path(self) -> Path:
@@ -120,14 +149,55 @@ class TrainingDatasetDirManager:
     def metadata_yaml_file_path(self) -> Path:
         return self.path / 'metadata.yaml'
 
+    @property
+    def metadata(self) -> ModelMetadataDict:
+        with open(self.metadata_yaml_file_path, 'r') as f:
+            metadata: ModelMetadataDict = yaml.safe_load(f) #TODO: validate file
+        return metadata
+
     def set_paths(self) -> None:
         try:
-            self.path: Path = self.source_dataset_dir.path.parent / self.dataset_name
-            self.train_dir: DatasetDirManager = DatasetDirManager(self.path / 'train')
-            self.validation_dir: DatasetDirManager = DatasetDirManager(self.path / 'validation')
-            self.test_dir: DatasetDirManager = DatasetDirManager(self.path / 'test')
+            self.train_dir: DatasetDirManager = DatasetDirManager(
+                self.path / 'train',
+                create= False
+            )
+            self.validation_dir: DatasetDirManager = DatasetDirManager(
+                self.path / 'validation',
+                create= False
+            )
+            self.test_dir: DatasetDirManager = DatasetDirManager(
+                self.path / 'test',
+                create= False
+            )
         except AttributeError:
-            my_logger.warning('Can\'t set paths. No "source_dataset_dir" or "dataset_name".')
+            my_logger.warning('Can\'t set paths. No "path" is defined.')
+
+    def create_paths(self) -> None:
+        try:
+            self.train_dir: DatasetDirManager = DatasetDirManager(
+                self.path / 'train',
+                create= True
+            )
+            self.validation_dir: DatasetDirManager = DatasetDirManager(
+                self.path / 'validation',
+                create= True
+            )
+            self.test_dir: DatasetDirManager = DatasetDirManager(
+                self.path / 'test',
+                create= True
+            )
+        except AttributeError:
+            my_logger.warning('Can\'t set paths. No "path" is defined.')
+
+    def __repr__(self) -> str:
+        return (f'{self.__class__.__name__}(\n'
+                f'  • path= "{self.path}",\n'
+                f'  • train_dir= {self.train_dir},\n'
+                f'  • validation_dir= {self.validation_dir},\n'
+                f'  • test_dir= {self.test_dir}\n)')
+
+    def __str__(self) -> str:
+        return (f'{self.__class__.__name__}("{self.path}")')
 
     def split(
         self,

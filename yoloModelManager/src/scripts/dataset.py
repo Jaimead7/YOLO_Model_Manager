@@ -69,7 +69,9 @@ def split_dataset(
         msg: str = 'Validation + test ratio should be lower than 50% of the dataset.'
         my_logger.error(f'AttributeError: {msg}')
         raise AttributeError(msg)
-    dirManager: TrainingDatasetDirManager = TrainingDatasetDirManager(data_source)
+    dirManager: TrainingDatasetDirManager = TrainingDatasetDirManager(
+        source_dataset_dir= data_source
+    )
     if images_source is not None:
         dirManager.source_dataset_dir.add_images(images_source)
     dirManager.split(validation= validation, test= test)

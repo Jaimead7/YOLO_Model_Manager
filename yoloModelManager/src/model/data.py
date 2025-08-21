@@ -1,38 +1,13 @@
 from datetime import datetime, timezone
-from enum import Enum
 from pathlib import Path
-from typing import Optional, TypedDict
+from typing import Optional
 
 import yaml
 from pyUtils import MyLogger, Styles
 
-from ..utils import IMAGES_PATH, MODEL_LOGGING_LVL
+from ..utils import IMAGES_PATH, MODEL_LOGGING_LVL, ModelMetadataDict
 
 my_logger = MyLogger(f'{__name__}', MODEL_LOGGING_LVL)
-
-
-class ModelTasks(Enum):
-    DETECT = 'detect'
-    SEGMENT = 'segment'
-    CLASSIFY = 'classify'
-    POSE = 'pose'
-    
-
-class ModelTrainingDataDict(TypedDict):
-    path: str
-    task: ModelTasks
-    train: str
-    val: str
-    test: str
-    nc: int
-    name: dict[int, str]
-
-
-class ModelMetadataDict(TypedDict):
-    date: datetime
-    camera_width: int
-    camera_height: int
-    filters: list[str]
 
 
 def create_model_medatada_yaml(

@@ -3,7 +3,8 @@ from shutil import copy2
 from typing import Optional
 
 from pyUtils import MyLogger, Styles
-from utils.config import FILESYSTEM_LOGGING_LVL
+
+from ..utils.config import FILESYSTEM_LOGGING_LVL
 
 my_logger = MyLogger(f'{__name__}', FILESYSTEM_LOGGING_LVL)
 

@@ -5,8 +5,9 @@ import click
 from pyUtils import MyLogger
 
 from ..cameras import CameraManager, camera_manager_factory
+from ..filesystem import TrainingDatasetDirManager
 from ..model import ModelManager
-from ..utils import SCRIPTS_LOGGING_LVL
+from ..utils import SCRIPTS_LOGGING_LVL, YOLO_IMAGE_WIDTH
 
 my_logger = MyLogger(f'{__name__}', SCRIPTS_LOGGING_LVL)
 
@@ -55,18 +56,57 @@ def test_model(
 
 @click.command()
 @click.option(
-    '--model',
+    '--name',
+    '-n',
+    'name',
+    type= click.STRING,
+    required= True,
+    help= 'Name of the model to create.'
+)
+@click.option(
+    '--base-model',
     '-m',
     'base_model',
     type= click.STRING,
     required= True,
-    help= 'Name of the model to be used.'
+    help= 'Name of the model to be used as base.'
+)
+@click.option(
+    '--dataset',
+    '-d',
+    'dataset',
+    type= click.Path(
+        readable= True,
+        writable= True,
+        path_type= Path
+    ),
+    required= True,
+    help= f'Path to the dataset.'
+)
+@click.option(
+    '--epochs',
+    '-e',
+    'epochs',
+    type= click.IntRange(
+        min= 0,
+        min_open= True,
+    ),
+    default= 60,
+    help= 'Epoch of the training process.'
 )
 def train_model(
-    base_model: Path,
-    dataset: str,
+    name: str,
+    base_model: str,
+    dataset: Path,
     epochs: int,
-    imgsz: int
 ) -> None:
-    my_logger.debug(f'Executed: train-model -m {base_model} -d {dataset} -e {epochs} -s {imgsz}')
-    ... #TODO
+    my_logger.debug(f'Executed: train-model -n {name} -m {base_model} -d {dataset} -e {epochs}')
+    dataset_dir: TrainingDatasetDirManager = TrainingDatasetDirManager(
+        dataset_dir= dataset
+    )
+    base_model_manager: ModelManager = ModelManager(base_model)
+    base_model_manager.train(
+        dataset= dataset_dir,
+        new_name= name,
+        epochs= epochs
+    )

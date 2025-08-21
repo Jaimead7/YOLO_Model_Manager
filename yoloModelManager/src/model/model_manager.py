@@ -4,13 +4,12 @@ from typing import Any, Callable
 
 import numpy as np
 import yaml
-from ultralytics import YOLO
 from pyUtils import MyLogger, Styles
+from ultralytics import YOLO
 
+from ..filesystem import TrainingDatasetDirManager
 from ..image import ImageProcessing
-from ..utils import MODEL_LOGGING_LVL, MODELS_PATH
-
-from .data import ModelMetadataDict
+from ..utils import MODEL_LOGGING_LVL, MODELS_PATH, ModelMetadataDict
 
 my_logger = MyLogger(f'{__name__}', MODEL_LOGGING_LVL)
 
@@ -81,7 +80,7 @@ class ModelManager:
     @property
     def metadata(self) -> ModelMetadataDict:
         with open(self._metadata_path, 'r') as f:
-            metadata: ModelMetadataDict = yaml.safe_load(f) #TODO: validate file
+            metadata: ModelMetadataDict = yaml.safe_load(f)
         return metadata
 
     def _export_model_2_ncnn(self) -> None:
@@ -136,3 +135,28 @@ class ModelManager:
         if source:
             return ImageProcessing.get_images_grid([self.last_input, self.last_result])
         return self.last_result
+
+    def train(
+        self,
+        dataset: TrainingDatasetDirManager,
+        new_name: str,
+        epochs: int = 60,
+    ):
+        if any([
+            dataset.metadata['camera_width'] != self.metadata['camera_width'],
+            dataset.metadata['camera_height'] != self.metadata['camera_height'],
+            dataset.metadata['filters'] != self.metadata['filters']
+        ]):
+            msg: str = f'Base model and dataset must have the same image size and filters.'
+            my_logger.error(f'ValueError: {msg}')
+            raise ValueError(msg)
+        model = YOLO(self.pt_model_path)
+        model.train(
+            data= dataset.data_yaml_file_path,
+            epochs= epochs,
+            imgsz= dataset.metadata['camera_width'],
+            project= MODELS_PATH / new_name,
+            batch= 16,
+            verbose= True
+        )
+        ... #TODO
