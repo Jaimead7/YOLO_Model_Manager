@@ -1,15 +1,20 @@
-from datetime import datetime
+import logging
+from datetime import datetime, timezone
+from os import getcwd
 from pathlib import Path
+from shutil import copy2
 from typing import Any, Callable
 
 import numpy as np
 import yaml
 from pyUtils import MyLogger, Styles
 from ultralytics import YOLO
+from ultralytics import settings as yolo_settings
 
 from ..filesystem import TrainingDatasetDirManager
 from ..image import ImageProcessing
-from ..utils import MODEL_LOGGING_LVL, MODELS_PATH, ModelMetadataDict
+from ..utils import (MODEL_LOGGING_LVL, MODELS_PATH, ULTRALYTICS_LOGGING_LVL,
+                     ModelMetadataDict)
 
 my_logger = MyLogger(f'{__name__}', MODEL_LOGGING_LVL)
 
@@ -141,7 +146,7 @@ class ModelManager:
         dataset: TrainingDatasetDirManager,
         new_name: str,
         epochs: int = 60,
-    ):
+    ) -> None:
         if any([
             dataset.metadata['camera_width'] != self.metadata['camera_width'],
             dataset.metadata['camera_height'] != self.metadata['camera_height'],
@@ -150,13 +155,32 @@ class ModelManager:
             msg: str = f'Base model and dataset must have the same image size and filters.'
             my_logger.error(f'ValueError: {msg}')
             raise ValueError(msg)
+        new_model_path: Path = MODELS_PATH / new_name
+        if new_model_path.is_dir():
+            my_logger.warning(f'The model already exists. {new_name}.pt won\'t be overwritten. metadata.yaml will be overwrite.')
         model = YOLO(self.pt_model_path)
+        cwd: Path = Path(getcwd())
+        start_time: datetime = datetime.now(timezone.utc)
+        logging.getLogger('ultralytics').setLevel(my_logger._logger.level)
         model.train(
             data= dataset.data_yaml_file_path,
             epochs= epochs,
             imgsz= dataset.metadata['camera_width'],
-            project= MODELS_PATH / new_name,
-            batch= 16,
+            project= new_model_path,
+            batch= -1,
             verbose= True
         )
-        ... #TODO
+        logging.getLogger('ultralytics').setLevel(ULTRALYTICS_LOGGING_LVL)
+        my_logger.debug(
+            f'Training for "{new_name}" finished in {datetime.now(timezone.utc) - start_time}.',
+            Styles.SUCCEED
+        )
+        (cwd / 'yolo11n.pt').unlink()
+        copy2(
+            dataset.metadata_yaml_file_path,
+            (new_model_path / 'metadata.yaml')
+        )
+        copy2(
+            (new_model_path / 'train' / 'weights' / 'best.pt'),
+            (new_model_path / f'{new_name}.pt')
+        )

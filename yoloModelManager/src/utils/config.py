@@ -19,6 +19,7 @@ class EnvVars(Enum):
     IMAGE_LOGGING_LVL = 'IMAGE_LOGGING_LVL'
     MODEL_LOGGING_LVL = 'MODEL_LOGGING_LVL'
     CAMERA_LOGGING_LVL = 'CAMERA_LOGGING_LVL'
+    ULTRALYTICS_LOGGING_LVL = 'ULTRALYTICS_LOGGING_LVL'
 
 _MY_PACKAGE: ProjectPathsDict = ProjectPathsDict().set_app_path(Path(__file__).parents[2])
 _MY_PACKAGE[ProjectPathsDict.DIST_PATH] = _MY_PACKAGE[ProjectPathsDict.APP_PATH] / 'dist'
@@ -61,5 +62,6 @@ SCRIPTS_LOGGING_LVL: int = _get_logging_lvl_from_env(EnvVars.SCRIPTS_LOGGING_LVL
 IMAGE_LOGGING_LVL: int = _get_logging_lvl_from_env(EnvVars.IMAGE_LOGGING_LVL.value)
 MODEL_LOGGING_LVL: int = _get_logging_lvl_from_env(EnvVars.MODEL_LOGGING_LVL.value)
 CAMERA_LOGGING_LVL: int = _get_logging_lvl_from_env(EnvVars.CAMERA_LOGGING_LVL.value)
+ULTRALYTICS_LOGGING_LVL: int = _get_logging_lvl_from_env(EnvVars.ULTRALYTICS_LOGGING_LVL.value)
 cv2.setLogLevel(0) #Default 3
-logging.getLogger('ultralytics').setLevel(logging.WARNING)
+logging.getLogger('ultralytics').setLevel(ULTRALYTICS_LOGGING_LVL)
