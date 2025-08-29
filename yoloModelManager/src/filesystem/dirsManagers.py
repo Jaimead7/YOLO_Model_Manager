@@ -10,7 +10,12 @@ from ..utils import (DATASETS_PATH, FILESYSTEM_LOGGING_LVL, IMAGES_PATH,
 from .dirs import check_dir_path, unzip_dir
 from .files import ALLOWED_IMAGES_EXTENSIONS, copy_files
 
-my_logger = MyLogger(f'{__name__}', FILESYSTEM_LOGGING_LVL)
+my_logger = MyLogger(
+    logger_name= f'{__name__}',
+    logging_level= FILESYSTEM_LOGGING_LVL,
+    file_path= 'yoloModelManager.log',
+    save_logs= True
+)
 
 
 class DatasetDirManager:

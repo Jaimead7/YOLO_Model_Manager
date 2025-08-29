@@ -6,7 +6,12 @@ from pyUtils import MyLogger, Styles
 
 from ..utils.config import FILESYSTEM_LOGGING_LVL
 
-my_logger = MyLogger(f'{__name__}', FILESYSTEM_LOGGING_LVL)
+my_logger = MyLogger(
+    logger_name= f'{__name__}',
+    logging_level= FILESYSTEM_LOGGING_LVL,
+    file_path= 'yoloModelManager.log',
+    save_logs= True
+)
 
 ALLOWED_IMAGES_EXTENSIONS: set[str] = {
     '.png',

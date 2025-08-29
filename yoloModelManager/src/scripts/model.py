@@ -9,7 +9,12 @@ from ..filesystem import TrainingDatasetDirManager
 from ..model import ModelManager
 from ..utils import SCRIPTS_LOGGING_LVL, YOLO_IMAGE_WIDTH
 
-my_logger = MyLogger(f'{__name__}', SCRIPTS_LOGGING_LVL)
+my_logger = MyLogger(
+    logger_name= f'{__name__}',
+    logging_level= SCRIPTS_LOGGING_LVL,
+    file_path= 'yoloModelManager.log',
+    save_logs= True
+)
 
 
 @click.command()

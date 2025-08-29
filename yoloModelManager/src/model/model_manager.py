@@ -16,7 +16,12 @@ from ..image import ImageProcessing
 from ..utils import (MODEL_LOGGING_LVL, MODELS_PATH, ULTRALYTICS_LOGGING_LVL,
                      ModelMetadataDict)
 
-my_logger = MyLogger(f'{__name__}', MODEL_LOGGING_LVL)
+my_logger = MyLogger(
+    logger_name= f'{__name__}',
+    logging_level= MODEL_LOGGING_LVL,
+    file_path= 'yoloModelManager.log',
+    save_logs= True
+)
 
 
 class ModelManager:

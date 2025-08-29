@@ -16,7 +16,12 @@ from ..model.data import create_model_medatada_yaml
 from ..model.model_manager import ModelManager
 from ..utils.config import CAMERA_LOGGING_LVL
 
-my_logger = MyLogger(f'{__name__}', CAMERA_LOGGING_LVL)
+my_logger = MyLogger(
+    logger_name= f'{__name__}',
+    logging_level= CAMERA_LOGGING_LVL,
+    file_path= 'yoloModelManager.log',
+    save_logs= True
+)
 
 
 class CameraInfo(TypedDict):
@@ -96,9 +101,9 @@ class CameraManager(ABC):
         cameras_info: list[dict] = cls.get_cameras_info()
         working_indices: list[int] = cls.detect_working_cameras()
         if not working_indices:
-            msg: str = 'Cameras not foud.'
+            msg: str = 'Cameras not found.'
             my_logger.error(f'RuntimeError: {msg}')
-            raise RuntimeError('Cameras not foud.')
+            raise RuntimeError(msg)
         cameras: dict[int, CameraInfo] = {}
         #FIXME: the order of getCamerasInfo is not the same that detectWorkingCameras so the names may not be ok.
         for cv2_index in working_indices:
@@ -251,7 +256,7 @@ class WindowsCameraManager(CameraManager):
     @staticmethod
     @time_me
     def get_cameras_info() -> list[dict]:
-        import wmi # type: ignore
+        import wmi  # type: ignore
         cameras: list[dict] = []
         for device in wmi.WMI().query('SELECT * FROM Win32_PnPEntity'):
             if device.PNPClass == 'Camera':

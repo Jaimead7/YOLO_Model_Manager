@@ -10,7 +10,12 @@ from pyUtils import MyLogger, Styles
 from ..utils import (IMAGE_LOGGING_LVL, IMAGES_PATH, YOLO_IMAGE_HEIGHT,
                      YOLO_IMAGE_WIDTH)
 
-my_logger = MyLogger(f'{__name__}', IMAGE_LOGGING_LVL)
+my_logger = MyLogger(
+    logger_name= f'{__name__}',
+    logging_level= IMAGE_LOGGING_LVL,
+    file_path= 'yoloModelManager.log',
+    save_logs= True
+)
 
 
 class ImageProcessing:
