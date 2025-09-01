@@ -5,7 +5,7 @@
 [project]
     name = "jaimead7-yolo-model-manager"
     version = "0.0.1"
-    description = "Source code for training and executing custom YOLO models."
+    description = "Utilities for training, testing and executing custom YOLO models."
     authors = [
         {name = "Jaimead7", email = "alvarez.diaz.jaime1@gmail.com"},
     ]
@@ -13,7 +13,7 @@
         {name = "Jaimead7", email = "alvarez.diaz.jaime1@gmail.com"},
     ]
     readme = {file = "README.md", content-type = "text/markdown"}
-    license = "MIT"
+    license = "AGPL-3.0"
     license-files = [
         "LICENSE",
     ]
@@ -21,7 +21,8 @@
         "training",
         "YOLO",
         "vision",
-        "AI"
+        "AI",
+        "Ultralytics"
     ]
     classifiers = [
         "Programming Language :: Python :: 3.10",
@@ -38,8 +39,8 @@
     ]
 
     [project.urls]
-        Homepage = "https://github.com/Jaimead7/AirbagCutInspection/trainingApp"
-        Repository = "https://github.com/Jaimead7/AirbagCutInspection"
+        Homepage = "https://github.com/Jaimead7/YOLO_Model_Manager"
+        Repository = "https://github.com/Jaimead7/YOLO_Model_Manager"
 
     [project.scripts]
         image-adquisition = "yoloModelManager.src.scripts.camera:image_adquisition"

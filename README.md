@@ -50,3 +50,6 @@ The CLI provides the following commands:
 - [**Test model:**](./docs/cli/test-model) `test-model [OPTIONS]`
 - [**Train model**](./docs/cli/train-model) `train-model [OPTIONS]`
 - [**Split dataset**](./docs/cli/split-dataset) `split-dataset [OPTIONS]`
+
+## License:
+This package has a [AGPL-3.0](LICENSE) license due to the usage of [Ultralytics](https://github.com/ultralytics/ultralytics/) package.
