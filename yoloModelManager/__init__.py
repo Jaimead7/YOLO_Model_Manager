@@ -1,3 +1,4 @@
+#---------- LOAD ENV VARIABLES FIRST ----------#
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -6,11 +7,15 @@ load_dotenv(
     Path(__file__).parent / 'dist' / '.env',
     override= False
 )
+#---------------------------------------------#
 
+import logging
 import pyUtils
 
+pyUtils.set_pyutils_logging_level(logging.WARNING)
 pyUtils.set_pyutils_logs_path('yoloModelManager.log')
 pyUtils.save_pyutils_logs(True)
+pyUtils.set_pyutils_logging_level(logging.DEBUG)
 
 from .src.cameras import *
 from .src.cameras.camera_manager import my_logger as camera_manager_logger

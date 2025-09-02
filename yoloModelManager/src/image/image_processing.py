@@ -14,7 +14,7 @@ my_logger = MyLogger(
     logger_name= f'{__name__}',
     logging_level= IMAGE_LOGGING_LVL,
     file_path= 'yoloModelManager.log',
-    save_logs= True
+    save_logs= False
 )
 
 

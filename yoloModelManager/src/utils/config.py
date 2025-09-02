@@ -50,18 +50,19 @@ YOLO_IMAGE_WIDTH: int = _MY_CFG.model.yolo_image_input_width
 YOLO_IMAGE_HEIGHT: int = _MY_CFG.model.yolo_image_input_height
 
 # LOGGING LEVELS
-def _get_logging_lvl_from_env(env_var_name: str) -> int:
+#TODO: change to pyUtils
+def get_logging_lvl_from_env(env_var_name: str) -> int:
     env_var: str | int = getenv(env_var_name, logging.DEBUG)
     try:
         return int(env_var)
     except ValueError:
         return MyLogger.get_lvl_int(str(env_var))
-TIMING_LOGGING_LVL: int = _get_logging_lvl_from_env(EnvVars.TIMING_LOGGING_LVL.value)
-FILESYSTEM_LOGGING_LVL: int = _get_logging_lvl_from_env(EnvVars.FILESYSTEM_LOGGING_LVL.value)
-SCRIPTS_LOGGING_LVL: int = _get_logging_lvl_from_env(EnvVars.SCRIPTS_LOGGING_LVL.value)
-IMAGE_LOGGING_LVL: int = _get_logging_lvl_from_env(EnvVars.IMAGE_LOGGING_LVL.value)
-MODEL_LOGGING_LVL: int = _get_logging_lvl_from_env(EnvVars.MODEL_LOGGING_LVL.value)
-CAMERA_LOGGING_LVL: int = _get_logging_lvl_from_env(EnvVars.CAMERA_LOGGING_LVL.value)
-ULTRALYTICS_LOGGING_LVL: int = _get_logging_lvl_from_env(EnvVars.ULTRALYTICS_LOGGING_LVL.value)
+TIMING_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.TIMING_LOGGING_LVL.value)
+FILESYSTEM_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.FILESYSTEM_LOGGING_LVL.value)
+SCRIPTS_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.SCRIPTS_LOGGING_LVL.value)
+IMAGE_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.IMAGE_LOGGING_LVL.value)
+MODEL_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.MODEL_LOGGING_LVL.value)
+CAMERA_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.CAMERA_LOGGING_LVL.value)
+ULTRALYTICS_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.ULTRALYTICS_LOGGING_LVL.value)
 cv2.setLogLevel(0) #Default 3
 logging.getLogger('ultralytics').setLevel(ULTRALYTICS_LOGGING_LVL)

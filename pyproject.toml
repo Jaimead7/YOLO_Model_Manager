@@ -59,6 +59,3 @@
                 "dist/images/.gitignore",
                 "dist/models/.gitignore"
             ]
-    [tool.pytest.ini_options]
-        python_files = "test_*.py"
-        addopts = "--verbose"

@@ -10,7 +10,7 @@ my_logger = MyLogger(
     logger_name= f'{__name__}',
     logging_level= FILESYSTEM_LOGGING_LVL,
     file_path= 'yoloModelManager.log',
-    save_logs= True
+    save_logs= False
 )
 
 ALLOWED_IMAGES_EXTENSIONS: set[str] = {
