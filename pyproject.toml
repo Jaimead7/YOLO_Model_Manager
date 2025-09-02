@@ -53,7 +53,12 @@
         [tool.setuptools.packages]
         find = {}
         [tool.setuptools.package-data]
-            yoloModelManager = ["dist/config/*.toml"]
+            yoloModelManager = [
+                "dist/config/*.toml",
+                "dist/datasets/.gitignore",
+                "dist/images/.gitignore",
+                "dist/models/.gitignore"
+            ]
     [tool.pytest.ini_options]
         python_files = "test_*.py"
         addopts = "--verbose"
