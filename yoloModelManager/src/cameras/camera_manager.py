@@ -14,7 +14,7 @@ from pyUtils import MyLogger, time_me
 from ..image.image_processing import ImageProcessing
 from ..model.data import create_model_medatada_yaml
 from ..model.model_manager import ModelManager
-from ..utils.config import CAMERA_LOGGING_LVL
+from ..utils.config import CAMERA_LOGGING_LVL, IMAGES_PATH
 
 my_logger = MyLogger(
     logger_name= f'{__name__}',
@@ -37,7 +37,12 @@ class CameraManager(ABC):
         camera_id: Optional[int] = None
     ) -> None:
         self.camera_info: CameraInfo = self.select_camera(camera_id)
-        self.width, self.height = self.get_camera_resolution()
+        with self.get_video_capture() as cap:
+            self.width, self.height = self.get_camera_resolution(cap)
+        self.show_filters = None
+        self.save_filters = None
+        self.save_dir_path = None
+        self.keys_callbacks: dict[int, tuple[Callable, dict]] = {} #TODO: add parameters to callbacks
         my_logger.info(f'Camera set to: {self.camera_info}.')
         super().__init__()
 
@@ -54,22 +59,57 @@ class CameraManager(ABC):
         return self.camera_info['width']
 
     @width.setter
-    def width(self, w: Any) -> None:
-        try:
-            self.camera_info['width'] = w
-        except Exception as e:
-            my_logger.warning(f'Unable to set camera width: {e}')
+    def width(self, w: int) -> None:
+        self.camera_info['width'] = w
 
     @property
     def height(self) -> int:
         return self.camera_info['height']
 
     @height.setter
-    def height(self, h: Any) -> None:
-        try:
-            self.camera_info['height'] = h
-        except Exception as e:
-            my_logger.warning(f'Unable to set camera height: {e}')
+    def height(self, h: int) -> None:
+        self.camera_info['height'] = h
+
+    @property
+    def show_filters(self) -> list[Callable]:
+        if self._show_filters is None:
+            return []
+        return self._show_filters
+
+    @show_filters.setter
+    def show_filters(self, filters: Optional[list[Callable]]) -> None:
+        #TODO: check filters
+        self._show_filters: Optional[list[Callable]] = filters
+
+    @property
+    def save_filters(self) -> list[Callable]:
+        if self._save_filters is None:
+            return []
+        return self._save_filters
+
+    @save_filters.setter
+    def save_filters(self, filters: Optional[list[Callable]]) -> None:
+        #TODO: check filters
+        self._save_filters: Optional[list[Callable]] = filters
+
+    @property
+    def save_dir_path(self) -> Path:
+        if self._save_dir_path is None:
+            return IMAGES_PATH
+        return self._save_dir_path
+
+    @save_dir_path.setter
+    def save_dir_path(self, path: Optional[str | Path]) -> None:
+        if path is None:
+            self._save_dir_path = None
+        else:
+            self._save_dir_path = Path(path)
+            if not self._save_dir_path.is_dir():
+                self._save_dir_path.mkdir(
+                    parents= True
+                )
+                my_logger.info(f'"{self._save_dir_path}" created.')
+        my_logger.debug(f'Save path of camera "{self.camera_info["index"]}": "{self.save_dir_path}".')
 
     @staticmethod
     @abstractmethod
@@ -137,7 +177,7 @@ class CameraManager(ABC):
 
     @contextmanager
     def get_video_capture(self) -> Generator[cv2.VideoCapture, Any, None]:
-        cap = cv2.VideoCapture(self.camera)
+        cap: cv2.VideoCapture = cv2.VideoCapture(self.camera)
         if not cap.isOpened():
             msg: str = 'Can\'t connect to the camera.'
             my_logger.error(f'ConnectionRefusedError: {msg}')
@@ -148,107 +188,116 @@ class CameraManager(ABC):
             cap.release()
 
     @time_me
-    def get_camera_resolution(self) -> tuple[int, int]:
-        with self.get_video_capture() as cap:
-            self.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            self.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    def get_camera_resolution(self, cap: cv2.VideoCapture) -> tuple[int, int]:
+        self.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         my_logger.info(f'Camera resolution: {self.width}x{self.height} px.')
         return (self.width, self.height)
 
     @time_me
-    def set_camera_resolution(self, w: int, h: int) -> tuple[int, int]:
-        with self.get_video_capture() as cap:
-            cap.set(cv2.CAP_PROP_FRAME_WIDTH, w)
-            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, h)
-        return self.get_camera_resolution()
+    def set_camera_resolution(
+        self,
+        w: int,
+        h: int,
+        cap: cv2.VideoCapture
+    ) -> tuple[int, int]:
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, w)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, h)
+        return self.get_camera_resolution(cap)
 
     @time_me
     def reset_window_to_camera_resolution(self) -> None:
         cv2.resizeWindow(self.name, self.width, self.height)
         my_logger.debug(f'Window resize to: {self.width}x{self.height} px.')
 
+    @staticmethod
+    def get_frame(
+        cap: cv2.VideoCapture
+    ) -> np.ndarray:
+        ret: bool
+        frame: np.ndarray
+        ret, frame = cap.read()
+        if not ret:
+            msg: str = 'Can\'t read frame.'
+            my_logger.error(f'RuntimeError: {msg}')
+            raise RuntimeError(msg)
+        return frame
+
+    def exit(self, *args, **kwargs) -> int:
+        my_logger.info('Stopping model stream...')
+        create_model_medatada_yaml(
+            self.save_dir_path,
+            self.width,
+            self.height,
+            [ImageProcessing.get_filter_name(filter)
+             for filter in self.save_filters]
+        )
+        return -1
+
+    def save_last_frame(self, *args, **kwargs) -> int:
+        try:
+            subfolder = Path(kwargs['subfolder'])
+        except:
+            subfolder = Path("")
+        if len(self.save_filters) == 0:
+            ImageProcessing.save_image(self.last_frame, self.save_dir_path / subfolder)
+        else:
+            frame: np.ndarray = self.last_frame
+            for filter in self.save_filters:
+                frame: np.ndarray = filter(frame)
+            ImageProcessing.save_image(frame, self.save_dir_path / subfolder)
+        return 0
+
     def video_stream(
         self,
-        width: int = 1280,
-        height: int = 720,
-        show_filters: list[Callable] = [],
-        save_filters: Optional[list[Callable]] = None,
-        save_dir_path: Optional[Path] = None
+        width: int = 640,
+        height: int = 480
     ) -> None:
+        self.keys_callbacks[27] = (self.exit, {})
         cv2.namedWindow(self.name, cv2.WINDOW_AUTOSIZE)
-        self.set_camera_resolution(width, height)
-        self.reset_window_to_camera_resolution()
         with self.get_video_capture() as cap:
+            self.set_camera_resolution(width, height, cap)
+            self.reset_window_to_camera_resolution()
             my_logger.debug('Starting video stream.')
             while True:
-                ret: bool
-                frame: np.ndarray
-                ret, frame = cap.read()
-                if not ret:
-                    msg: str = 'Can\'t read frame.'
-                    my_logger.error(f'RuntimeError: {msg}')
-                    raise RuntimeError(msg)
-                frames: list[np.ndarray] = [frame]
-                for filter in show_filters:
-                    frames.append(filter(frame))
+                self.last_frame: np.ndarray = self.get_frame(cap)
+                frames: list[np.ndarray] = [self.last_frame]
+                for filter in self.show_filters:
+                    frames.append(filter(self.last_frame))
                 images_grid: np.ndarray = ImageProcessing.get_images_grid(frames)
                 cv2.imshow(self.name, images_grid)
                 key: int = cv2.waitKey(1)
-                if key == 27:
-                    filters: list[Callable] = [] if save_filters is None else save_filters
-                    create_model_medatada_yaml(
-                        save_dir_path,
-                        self.width,
-                        self.height,
-                        [ImageProcessing.get_filter_name(filter)
-                         for filter in filters]
-                    )
-                    my_logger.info('Stopping model stream...')
-                    break
-                elif key == 32:
-                    if save_filters is None:
-                        ImageProcessing.save_image(frame, save_dir_path)
-                    else:
-                        for filter in save_filters:
-                            frame = filter(frame)
-                        ImageProcessing.save_image(frame, save_dir_path)
-                elif key != -1:
-                    my_logger.debug(f'Key pressed: {key}')
+                try:
+                    if self.keys_callbacks[key][0](**self.keys_callbacks[key][1]) < 0:
+                        break
+                except KeyError:
+                    if key != -1:
+                        my_logger.debug(f'Key pressed: "{key}".')
         cv2.destroyAllWindows()
 
     def model_stream(
         self,
-        model: ModelManager,
-        save_dir_path: Optional[Path] = None
+        model: ModelManager
     ) -> None:
+        self.keys_callbacks[27] = (self.exit, {})
         cv2.namedWindow(self.name, cv2.WINDOW_AUTOSIZE)
-        self.set_camera_resolution(model.camera_width, model.camera_height)
-        self.reset_window_to_camera_resolution()
+        self.save_filters = model.filters
         with self.get_video_capture() as cap:
+            self.set_camera_resolution(model.camera_width, model.camera_height, cap)
+            self.reset_window_to_camera_resolution()
             my_logger.debug('Starting video stream.')
             while True:
-                ret: bool
-                frame: np.ndarray
-                ret, frame = cap.read()
-                if not ret:
-                    raise RuntimeError('Can\'t read frame.')
-                model.process_frame(frame)
+                self.last_frame: np.ndarray = self.get_frame(cap)
+                model.process_frame(self.last_frame)
                 frame_compose: np.ndarray = model.get_last_result_image()
                 cv2.imshow(self.name, frame_compose)
                 key: int = cv2.waitKey(1)
-                if key == 27:
-                    create_model_medatada_yaml(
-                        save_dir_path,
-                        self.width,
-                        self.height,
-                        model.metadata['filters']
-                    )
-                    my_logger.info('Stopping model stream...')
-                    break
-                elif key == 32:
-                    ImageProcessing.save_image(model.last_processed, save_dir_path)
-                elif key != -1:
-                    my_logger.debug(f'Key pressed: {key}')
+                try:
+                    if self.keys_callbacks[key][0](**self.keys_callbacks[key][1]) < 0:
+                        break
+                except KeyError:
+                    if key != -1:
+                        my_logger.debug(f'Key pressed: {key}')
         cv2.destroyAllWindows()
 
 
@@ -361,7 +410,7 @@ class LinuxCamerasManager(CameraManager):
         return camera_details
 
 
-def camera_manager_factory(cameraID: int) -> CameraManager:
+def camera_manager_factory(cameraID: Optional[int] = None) -> CameraManager:
     system: str = platform.system().lower()
     if system == 'windows':
         my_logger.info('Windows OS detected.')

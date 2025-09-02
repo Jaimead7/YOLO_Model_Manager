@@ -70,8 +70,10 @@ def image_adquisition(
     else:
         save_filters: Optional[list[Callable]] = [ImageProcessing.FILTERS[filter] for filter in save_filters_in]
     camera_manager: CameraManager = camera_manager_factory(camera)
-    camera_manager.video_stream(
-        show_filters= show_filters,
-        save_filters= save_filters,
-        save_dir_path= save_path
-    )
+    camera_manager.show_filters = show_filters
+    camera_manager.save_filters = save_filters
+    camera_manager.save_dir_path = save_path
+    camera_manager.keys_callbacks = {
+        32: (camera_manager.save_last_frame, {})
+    }
+    camera_manager.video_stream()

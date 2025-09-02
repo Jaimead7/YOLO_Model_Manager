@@ -131,6 +131,10 @@ class ImageProcessing:
             dir_path = IMAGES_PATH
         image_name: str = f'{uuid4()}.png'
         image_path: Path = dir_path / image_name
+        dir_path.mkdir(
+            parents= True,
+            exist_ok= True
+        )
         if cv2.imwrite(str(image_path), image):
             my_logger.debug(f'New image saved to "{image_path}"', Styles.SUCCEED)
         else:

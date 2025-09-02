@@ -53,9 +53,12 @@ def test_model(
     my_logger.debug(f'Executed: test-model -m {model_name} -c {camera} -p {save_path}')
     camera_manager: CameraManager = camera_manager_factory(camera)
     model: ModelManager = ModelManager(model_name)
+    camera_manager.save_dir_path = save_path
+    camera_manager.keys_callbacks = {
+        32: (camera_manager.save_last_frame, {})
+    }
     camera_manager.model_stream(
-        model= model,
-        save_dir_path= save_path
+        model= model
     )
 
 
