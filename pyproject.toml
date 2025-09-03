@@ -47,6 +47,7 @@
         test-model = "yoloModelManager.src.scripts.model:test_model"
         train-model = "yoloModelManager.src.scripts.model:train_model"
         split-dataset = "yoloModelManager.src.scripts.dataset:split_dataset"
+        move_cursor = "yoloModelManager.src.scripts.generic:move_cursor"
 
 [tool]
     [tool.setuptools]
