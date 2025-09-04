@@ -13,7 +13,7 @@ from ultralytics import YOLO
 from ..filesystem import TrainingDatasetDirManager
 from ..image import ImageProcessing
 from ..utils import (MODEL_LOGGING_LVL, MODELS_PATH, ULTRALYTICS_LOGGING_LVL,
-                     ModelMetadataDict)
+                     DatasetMetadataDict, ModelMetadataDict)
 
 my_logger = MyLogger(
     logger_name= f'{__name__}',
@@ -68,16 +68,22 @@ class ModelManager:
         return self._metadata_path
 
     @property
+    def metadata(self) -> ModelMetadataDict:
+        with open(self._metadata_path, 'r') as f:
+            metadata: ModelMetadataDict = yaml.safe_load(f)
+        return metadata
+
+    @property
+    def date(self) -> datetime:
+        return self.metadata['date']
+
+    @property
     def camera_width(self) -> int:
         return self.metadata['camera_width']
 
     @property
     def camera_height(self) -> int:
         return self.metadata['camera_height']
-
-    @property
-    def date(self) -> datetime:
-        return self.metadata['date']
 
     @property
     def filters(self) -> list[Callable[..., Any]]:
@@ -87,10 +93,52 @@ class ModelManager:
         ]
 
     @property
-    def metadata(self) -> ModelMetadataDict:
-        with open(self._metadata_path, 'r') as f:
-            metadata: ModelMetadataDict = yaml.safe_load(f)
-        return metadata
+    def brightness(self) -> float:
+        return self.metadata['brightness']
+
+    @property
+    def contrast(self) -> float:
+        return self.metadata['contrast']
+
+    @property
+    def saturation(self) -> float:
+        return self.metadata['saturation']
+
+    @property
+    def auto_exposure(self) -> float:
+        return self.metadata['auto_exposure']
+
+    @property
+    def exposure(self) -> float:
+        return self.metadata['exposure']
+
+    @property
+    def auto_wb(self) -> float:
+        return self.metadata['auto_wb']
+
+    @property
+    def wb(self) -> float:
+        return self.metadata['wb']
+
+    @property
+    def train_images(self) -> int:
+        return self.metadata['train_images']
+
+    @property
+    def val_images(self) -> int:
+        return self.metadata['val_images']
+
+    @property
+    def test_images(self) -> int:
+        return self.metadata['test_images']
+
+    @property
+    def task(self) -> str:
+        return self.metadata['task']
+
+    @property
+    def object_classes(self) -> dict[int, str]:
+        return self.metadata['name']
 
     def _export_model_2_ncnn(self) -> None:
         self.ncnn_model_path: Path = self.pt_model_path.with_name(self.pt_model_path.stem + '_ncnn_model')
@@ -179,10 +227,16 @@ class ModelManager:
             f'Training for "{new_name}" finished in {datetime.now(timezone.utc) - start_time}.',
             Styles.SUCCEED
         )
-        copy2(
-            dataset.metadata_yaml_file_path,
-            (new_model_path / 'metadata.yaml')
-        )
+        data: ModelMetadataDict = {
+            **dataset.metadata,
+            'train_images': dataset.get_n_train(),
+            'val_images': dataset.get_n_val(),
+            'test_images': dataset.get_n_test(),
+            'task': dataset.data['task'],
+            'name': dataset.data['name']
+        }
+        with open((new_model_path / 'metadata.yaml'), 'w') as f:
+            yaml.dump(data, f, sort_keys= False)
         copy2(
             (new_model_path / 'train' / 'weights' / 'best.pt'),
             (new_model_path / f'{new_name}.pt')

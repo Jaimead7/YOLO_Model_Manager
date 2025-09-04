@@ -25,7 +25,6 @@ from .src.filesystem.files import my_logger as files_logger
 from .src.image import *
 from .src.image.image_processing import my_logger as image_processing_logger
 from .src.model import *
-from .src.model.data import my_logger as model_data_logger
 from .src.model.model_manager import my_logger as model_manager_logger
 from .src.scripts.camera import my_logger as scripts_camera_logger
 from .src.scripts.dataset import my_logger as scripts_dataset_logger
@@ -38,7 +37,6 @@ loggers: tuple[MyLogger, ...] = (
     dirs_managers_logger,
     files_logger,
     image_processing_logger,
-    model_data_logger,
     model_manager_logger,
     scripts_camera_logger,
     scripts_dataset_logger,

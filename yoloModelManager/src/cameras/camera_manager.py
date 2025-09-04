@@ -1,5 +1,6 @@
 import platform
 import subprocess
+from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from pathlib import Path
@@ -12,8 +13,9 @@ import numpy as np
 from pyUtils import MyLogger, time_me
 
 from ..image.image_processing import ImageProcessing
-from ..model.data import create_model_medatada_yaml
+from ..filesystem.files import create_dataset_medatada_yaml
 from ..utils.config import MY_CFG, CAMERA_LOGGING_LVL, IMAGES_PATH
+from ..utils.data_types import DatasetMetadataDict
 
 my_logger = MyLogger(
     logger_name= f'{__name__}',
@@ -375,12 +377,23 @@ class CameraManager(ABC):
 
     def exit(self, *args, **kwargs) -> int:
         my_logger.info('Stopping model stream...')
-        create_model_medatada_yaml(
+        data: DatasetMetadataDict = {
+            'date': datetime.now(timezone.utc),
+            'camera_width': self.width,
+            'camera_height': self.height,
+            'filters': [ImageProcessing.get_filter_name(filter)
+                        for filter in self.save_filters],
+            'brightness': self.brightness,
+            'contrast': self.contrast,
+            'saturation': self.saturation,
+            'auto_exposure': MY_CFG.camera.auto_exposure,
+            'exposure': self.exposure,
+            'auto_wb': MY_CFG.camera.auto_wb,
+            'wb': self.wb
+        }
+        create_dataset_medatada_yaml(
             self.save_dir_path,
-            self.width,
-            self.height,
-            [ImageProcessing.get_filter_name(filter)
-             for filter in self.save_filters]
+            data
         )
         return -1
 

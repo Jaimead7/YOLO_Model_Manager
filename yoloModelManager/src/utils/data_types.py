@@ -20,8 +20,23 @@ class ModelTrainingDataDict(TypedDict):
     name: dict[int, str]
 
 
-class ModelMetadataDict(TypedDict):
+class DatasetMetadataDict(TypedDict):
     date: datetime
     camera_width: int
     camera_height: int
     filters: list[str]
+    brightness: float
+    contrast: float
+    saturation: float
+    auto_exposure: float
+    exposure: float
+    auto_wb: float
+    wb: float
+
+
+class ModelMetadataDict(DatasetMetadataDict):
+    train_images: int
+    val_images: int
+    test_images: int
+    task: str
+    name: dict[int, str]

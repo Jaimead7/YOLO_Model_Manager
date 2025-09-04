@@ -1,10 +1,13 @@
+from datetime import datetime, timezone
 from pathlib import Path
 from shutil import copy2
 from typing import Optional
 
+import yaml
 from pyUtils import MyLogger, Styles
 
-from ..utils.config import FILESYSTEM_LOGGING_LVL
+from ..utils.config import FILESYSTEM_LOGGING_LVL, IMAGES_PATH
+from ..utils.data_types import DatasetMetadataDict
 
 my_logger = MyLogger(
     logger_name= f'{__name__}',
@@ -40,3 +43,15 @@ def copy_files(
             my_logger.debug(f'"{source.name}" copied to "{destiny}".', Styles.SUCCEED)
         else:
             my_logger.warning(f'"{source}" won\'t be copied. File doesn\'t exists.')
+
+def create_dataset_medatada_yaml(
+    dir_path: Optional[Path],
+    data: DatasetMetadataDict
+) -> None:
+    if dir_path is None:
+        dir_path = IMAGES_PATH
+    file_path: Path = dir_path / 'metadata.yaml'
+    data['date'] = datetime.now(timezone.utc)
+    with open(file_path, 'w') as f:
+        yaml.dump(data, f, sort_keys= False)
+    my_logger.debug(f'{file_path.name} created on {file_path.parent}.', Styles.SUCCEED)
