@@ -251,7 +251,7 @@ class TrainingDatasetDirManager:
         n_classes: int = len(classes)
         data: ModelTrainingDataDict = {
             'path': str(self.path),
-            'task': ModelTasks.DETECT.value,
+            'task': str(ModelTasks.DETECT.value),
             'train': 'train/images',
             'val': 'validation/images',
             'test': 'test/images',

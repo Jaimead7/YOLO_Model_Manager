@@ -12,7 +12,7 @@ class ModelTasks(Enum):
 
 class ModelTrainingDataDict(TypedDict):
     path: str
-    task: ModelTasks
+    task: str
     train: str
     val: str
     test: str

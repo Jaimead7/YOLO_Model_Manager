@@ -9,7 +9,6 @@ import numpy as np
 import yaml
 from pyUtils import MyLogger, Styles
 from ultralytics import YOLO
-from ultralytics import settings as yolo_settings
 
 from ..filesystem import TrainingDatasetDirManager
 from ..image import ImageProcessing
@@ -180,7 +179,6 @@ class ModelManager:
             f'Training for "{new_name}" finished in {datetime.now(timezone.utc) - start_time}.',
             Styles.SUCCEED
         )
-        (cwd / 'yolo11n.pt').unlink()
         copy2(
             dataset.metadata_yaml_file_path,
             (new_model_path / 'metadata.yaml')
@@ -189,3 +187,7 @@ class ModelManager:
             (new_model_path / 'train' / 'weights' / 'best.pt'),
             (new_model_path / f'{new_name}.pt')
         )
+        try:
+            (cwd / 'yolo11n.pt').unlink()
+        except FileNotFoundError:
+            pass
