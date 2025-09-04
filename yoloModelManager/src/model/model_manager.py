@@ -15,7 +15,7 @@ from ..filesystem import TrainingDatasetDirManager
 from ..image import ImageProcessing
 from ..utils import (MODEL_LOGGING_LVL, MODELS_PATH, ULTRALYTICS_LOGGING_LVL,
                      ModelMetadataDict)
-from .result import MyResult
+from .result import MyResult, ResultTracker
 
 my_logger = MyLogger(
     logger_name= f'{__name__}',
@@ -169,18 +169,18 @@ class ModelManager:
             self.ncnn_model_path,
             task= 'detect'
         )
+        self.result_tracker: ResultTracker = ResultTracker()
         my_logger.debug(f'Model "{self.ncnn_model_path.stem}" loaded.', Styles.SUCCEED)
 
     def process_frame(self, frame: np.ndarray) -> np.ndarray:
         frames: list[np.ndarray] = [frame]
         for filter in self.filters:
             frames.append(filter(frames[-1]))
-        result: MyResult  = MyResult(self.model(frames[-1])[0])
-        frames.append(result.plot_with_centers())
+        self.result_tracker.add_new_result(self.model(frames[-1])[0])
+        frames.append(self.result_tracker.plot())
         self.last_input_img: np.ndarray = frame
         self.last_processed_img: np.ndarray = frames[-2]
         self.last_result_img: np.ndarray = frames[-1]
-        self.last_result: Results = result
         return frames[-1]
 
     def get_last_result_image(self, source: bool = True) -> np.ndarray:
