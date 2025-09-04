@@ -13,8 +13,7 @@ from pyUtils import MyLogger, time_me
 
 from ..image.image_processing import ImageProcessing
 from ..model.data import create_model_medatada_yaml
-from ..model.model_manager import ModelManager
-from ..utils.config import CAMERA_LOGGING_LVL, IMAGES_PATH
+from ..utils.config import MY_CFG, CAMERA_LOGGING_LVL, IMAGES_PATH
 
 my_logger = MyLogger(
     logger_name= f'{__name__}',
@@ -197,11 +196,11 @@ class CameraManager(ABC):
                 name= cameras_info[cv2_index]['Name'],
                 width= 0, #TODO: change to cameras_info[cv2_index]['resolution']
                 height= 0,
-                brightness= 128.,
-                contrast= 32.,
-                saturation= 32.,
-                exposure= 156.,
-                wb= 0.
+                brightness= MY_CFG.camera.brightness,
+                contrast= MY_CFG.camera.contrast,
+                saturation= MY_CFG.camera.saturation,
+                exposure= MY_CFG.camera.exposure,
+                wb= MY_CFG.camera.wb
             )
         return cameras
 
@@ -443,7 +442,14 @@ class CameraManager(ABC):
         self.keys_callbacks[27] = (self.exit, {})
         cv2.namedWindow(self.name, cv2.WINDOW_AUTOSIZE)
         with self.get_video_capture() as cap:
-            cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)
+            cap.set(
+                cv2.CAP_PROP_AUTO_EXPOSURE,
+                MY_CFG.camera.auto_exposure
+            )
+            cap.set(
+                cv2.CAP_PROP_AUTO_WB,
+                MY_CFG.camera.auto_wb
+            )
             self.add_cam_prop_bars(cap)
             self.set_camera_resolution(cap)
             self.reset_window_to_camera_resolution()

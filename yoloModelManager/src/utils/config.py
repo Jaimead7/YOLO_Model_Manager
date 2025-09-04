@@ -25,7 +25,7 @@ _MY_PACKAGE: ProjectPathsDict = ProjectPathsDict().set_app_path(Path(__file__).p
 _MY_PACKAGE[ProjectPathsDict.DIST_PATH] = _MY_PACKAGE[ProjectPathsDict.APP_PATH] / 'dist'
 _MY_PACKAGE[ProjectPathsDict.CONFIG_PATH] = _MY_PACKAGE[ProjectPathsDict.DIST_PATH] / 'config'
 _MY_PACKAGE[ProjectPathsDict.CONFIG_FILE_PATH] = _MY_PACKAGE[ProjectPathsDict.CONFIG_PATH] / 'config.toml'
-_MY_CFG: ConfigFileManager = ConfigFileManager(_MY_PACKAGE[ProjectPathsDict.CONFIG_FILE_PATH])
+MY_CFG: ConfigFileManager = ConfigFileManager(_MY_PACKAGE[ProjectPathsDict.CONFIG_FILE_PATH])
 load_dotenv(
     dotenv_path= _MY_PACKAGE[ProjectPathsDict.DIST_PATH] / '.env',
     override= False
@@ -46,8 +46,8 @@ DATASETS_PATH: Path = Path(getenv(
 ))
 
 # CONSTANTS
-YOLO_IMAGE_WIDTH: int = _MY_CFG.model.yolo_image_input_width
-YOLO_IMAGE_HEIGHT: int = _MY_CFG.model.yolo_image_input_height
+YOLO_IMAGE_WIDTH: int = MY_CFG.model.yolo_image_input_width
+YOLO_IMAGE_HEIGHT: int = MY_CFG.model.yolo_image_input_height
 
 # LOGGING LEVELS
 #TODO: change to pyUtils
