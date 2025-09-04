@@ -29,7 +29,11 @@ class CameraInfo(TypedDict):
     name: str
     width: int
     height: int
-    brightness: int
+    brightness: float
+    contrast: float
+    saturation: float
+    exposure: float
+    wb: float
 
 
 class CameraManager(ABC):
@@ -72,12 +76,44 @@ class CameraManager(ABC):
         self.camera_info['height'] = h
 
     @property
-    def brightness(self) -> int:
+    def brightness(self) -> float:
         return self.camera_info['brightness']
 
     @brightness.setter
-    def brightness(self, b: int) -> None:
+    def brightness(self, b: float) -> None:
         self.camera_info['brightness'] = b
+
+    @property
+    def contrast(self) -> float:
+        return self.camera_info['contrast']
+
+    @contrast.setter
+    def contrast(self, b: float) -> None:
+        self.camera_info['contrast'] = b
+
+    @property
+    def saturation(self) -> float:
+        return self.camera_info['saturation']
+
+    @saturation.setter
+    def saturation(self, b: float) -> None:
+        self.camera_info['saturation'] = b
+
+    @property
+    def exposure(self) -> float:
+        return self.camera_info['exposure']
+
+    @exposure.setter
+    def exposure(self, b: float) -> None:
+        self.camera_info['exposure'] = b
+
+    @property
+    def wb(self) -> float:
+        return self.camera_info['wb']
+
+    @wb.setter
+    def wb(self, b: float) -> None:
+        self.camera_info['wb'] = b
 
     @property
     def show_filters(self) -> list[Callable]:
@@ -161,7 +197,11 @@ class CameraManager(ABC):
                 name= cameras_info[cv2_index]['Name'],
                 width= 0, #TODO: change to cameras_info[cv2_index]['resolution']
                 height= 0,
-                brightness= 255
+                brightness= 128.,
+                contrast= 32.,
+                saturation= 32.,
+                exposure= 156.,
+                wb= 0.
             )
         return cameras
 
@@ -220,7 +260,7 @@ class CameraManager(ABC):
     def get_brightness(
         self,
         cap: cv2.VideoCapture
-    ) -> int:
+    ) -> float:
         self.brightness = int(cap.get(cv2.CAP_PROP_BRIGHTNESS))
         my_logger.info(f'Camera brightness: {self.brightness}.')
         return self.brightness
@@ -229,12 +269,92 @@ class CameraManager(ABC):
     def set_brightness(
         self,
         cap: cv2.VideoCapture,
-        b: Optional[int] = None
+        b: Optional[float] = None
     ) -> None:
         if b is None:
             b = self.brightness
         cap.set(cv2.CAP_PROP_BRIGHTNESS, b)
         self.get_brightness(cap)
+
+    @time_me
+    def get_contrast(
+        self,
+        cap: cv2.VideoCapture
+    ) -> float:
+        self.contrast = int(cap.get(cv2.CAP_PROP_CONTRAST))
+        my_logger.info(f'Camera contrast: {self.contrast}.')
+        return self.contrast
+
+    @time_me
+    def set_contrast(
+        self,
+        cap: cv2.VideoCapture,
+        c: Optional[float] = None
+    ) -> None:
+        if c is None:
+            c = self.contrast
+        cap.set(cv2.CAP_PROP_CONTRAST, c)
+        self.get_contrast(cap)
+
+    @time_me
+    def get_saturation(
+        self,
+        cap: cv2.VideoCapture
+    ) -> float:
+        self.saturation = int(cap.get(cv2.CAP_PROP_SATURATION))
+        my_logger.info(f'Camera saturation: {self.saturation}.')
+        return self.saturation
+
+    @time_me
+    def set_saturation(
+        self,
+        cap: cv2.VideoCapture,
+        s: Optional[float] = None
+    ) -> None:
+        if s is None:
+            s = self.saturation
+        cap.set(cv2.CAP_PROP_SATURATION, s)
+        self.get_saturation(cap)
+
+    @time_me
+    def get_exposure(
+        self,
+        cap: cv2.VideoCapture
+    ) -> float:
+        self.exposure = int(cap.get(cv2.CAP_PROP_EXPOSURE))
+        my_logger.info(f'Camera exposure: {self.exposure}.')
+        return self.exposure
+
+    @time_me
+    def set_exposure(
+        self,
+        cap: cv2.VideoCapture,
+        e: Optional[float] = None
+    ) -> None:
+        if e is None:
+            e = self.exposure
+        cap.set(cv2.CAP_PROP_EXPOSURE, e)
+        self.get_exposure(cap)
+
+    @time_me
+    def get_wb(
+        self,
+        cap: cv2.VideoCapture
+    ) -> float:
+        self.wb = int(cap.get(cv2.CAP_PROP_WB_TEMPERATURE))
+        my_logger.info(f'Camera wb: {self.wb}.')
+        return self.wb
+
+    @time_me
+    def set_wb(
+        self,
+        cap: cv2.VideoCapture,
+        t: Optional[float] = None
+    ) -> None:
+        if t is None:
+            t = self.wb
+        cap.set(cv2.CAP_PROP_WB_TEMPERATURE, t)
+        self.get_wb(cap)
 
     @time_me
     def reset_window_to_camera_resolution(self) -> None:
@@ -279,19 +399,53 @@ class CameraManager(ABC):
             ImageProcessing.save_image(frame, self.save_dir_path / subfolder)
         return 0
 
-    def video_stream(self) -> None:
-        self.keys_callbacks[27] = (self.exit, {})
-        cv2.namedWindow(self.name, cv2.WINDOW_AUTOSIZE)
+    def add_cam_prop_bars(
+        self,
+        cap: cv2.VideoCapture
+    ) -> None:
         cv2.createTrackbar(
             'Brightness',
             self.name,
-            self.brightness,
+            int(self.brightness),
             255,
             lambda x: self.set_brightness(cap, x)
         )
+        cv2.createTrackbar(
+            'Contrast',
+            self.name,
+            int(self.contrast),
+            255,
+            lambda x: self.set_contrast(cap, x)
+        )
+        cv2.createTrackbar(
+            'Saturation',
+            self.name,
+            int(self.saturation),
+            255,
+            lambda x: self.set_saturation(cap, x)
+        )
+        cv2.createTrackbar(
+            'Exposure',
+            self.name,
+            int(self.exposure),
+            255,
+            lambda x: self.set_exposure(cap, x)
+        )
+        cv2.createTrackbar(
+            'Temperature',
+            self.name,
+            int(self.wb),
+            255,
+            lambda x: self.set_wb(cap, x)
+        )
+
+    def video_stream(self) -> None:
+        self.keys_callbacks[27] = (self.exit, {})
+        cv2.namedWindow(self.name, cv2.WINDOW_AUTOSIZE)
         with self.get_video_capture() as cap:
+            cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)
+            self.add_cam_prop_bars(cap)
             self.set_camera_resolution(cap)
-            self.set_brightness(cap)
             self.reset_window_to_camera_resolution()
             my_logger.debug('Starting video stream.')
             while True:
@@ -307,6 +461,14 @@ class CameraManager(ABC):
                         break
                 except KeyError:
                     if key != -1:
+                        #DELETE: prints
+                        print(f'CAP_PROP_BRIGHTNESS -> {cap.get(cv2.CAP_PROP_BRIGHTNESS)}')
+                        print(f'CAP_PROP_CONTRAST -> {cap.get(cv2.CAP_PROP_CONTRAST)}')
+                        print(f'CAP_PROP_SATURATION -> {cap.get(cv2.CAP_PROP_SATURATION)}')
+                        print(f'CAP_PROP_AUTO_EXPOSURE -> {cap.get(cv2.CAP_PROP_AUTO_EXPOSURE)}')
+                        print(f'CAP_PROP_EXPOSURE -> {cap.get(cv2.CAP_PROP_EXPOSURE)}')
+                        print(f'CAP_PROP_WB_TEMPERATURE -> {cap.get(cv2.CAP_PROP_WB_TEMPERATURE)}')
+                        print(f'CAP_PROP_AUTO_WB -> {cap.get(cv2.CAP_PROP_AUTO_WB)}')
                         my_logger.debug(f'Key pressed: "{key}".')
         cv2.destroyAllWindows()
 
