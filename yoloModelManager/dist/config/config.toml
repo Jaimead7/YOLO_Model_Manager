@@ -6,7 +6,7 @@
     brightness = 128.0
     contrast = 32.0
     saturation = 32.0
-    auto_exposure = 3
+    auto_exposure = 1
     exposure = 40.0
     auto_wb = 1
     wb = 0.0

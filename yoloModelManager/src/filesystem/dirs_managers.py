@@ -93,6 +93,9 @@ class DatasetDirManager:
             copy_files([images_path / 'metadata.yaml'], self.path)
         my_logger.debug(f'Images copied from "{images_path}" to "{self.images_path}".', Styles.SUCCEED)
 
+    def get_n_images(self) -> int:
+        return len(self.get_images_list())
+
 
 class TrainingDatasetDirManager:
     def __init__(
@@ -272,10 +275,10 @@ class TrainingDatasetDirManager:
         )
 
     def get_n_train(self) -> int:
-        ...
+        return self.train_dir.get_n_images()
 
     def get_n_val(self) -> int:
-        ...
+        return self.validation_dir.get_n_images()
 
     def get_n_test(self) -> int:
-        ...
+        return self.test_dir.get_n_images()

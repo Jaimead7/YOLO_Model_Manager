@@ -28,9 +28,7 @@ class DatasetMetadataDict(TypedDict):
     brightness: float
     contrast: float
     saturation: float
-    auto_exposure: float
     exposure: float
-    auto_wb: float
     wb: float
 
 

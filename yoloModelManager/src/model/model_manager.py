@@ -9,11 +9,13 @@ import numpy as np
 import yaml
 from pyUtils import MyLogger, Styles
 from ultralytics import YOLO
+from ultralytics.engine.results import Results
 
 from ..filesystem import TrainingDatasetDirManager
 from ..image import ImageProcessing
 from ..utils import (MODEL_LOGGING_LVL, MODELS_PATH, ULTRALYTICS_LOGGING_LVL,
-                     DatasetMetadataDict, ModelMetadataDict)
+                     ModelMetadataDict)
+from .result import MyResult
 
 my_logger = MyLogger(
     logger_name= f'{__name__}',
@@ -93,31 +95,23 @@ class ModelManager:
         ]
 
     @property
-    def brightness(self) -> float:
+    def camera_brightness(self) -> float:
         return self.metadata['brightness']
 
     @property
-    def contrast(self) -> float:
+    def camera_contrast(self) -> float:
         return self.metadata['contrast']
 
     @property
-    def saturation(self) -> float:
+    def camera_saturation(self) -> float:
         return self.metadata['saturation']
 
     @property
-    def auto_exposure(self) -> float:
-        return self.metadata['auto_exposure']
-
-    @property
-    def exposure(self) -> float:
+    def camera_exposure(self) -> float:
         return self.metadata['exposure']
 
     @property
-    def auto_wb(self) -> float:
-        return self.metadata['auto_wb']
-
-    @property
-    def wb(self) -> float:
+    def camera_wb(self) -> float:
         return self.metadata['wb']
 
     @property
@@ -181,17 +175,20 @@ class ModelManager:
         frames: list[np.ndarray] = [frame]
         for filter in self.filters:
             frames.append(filter(frames[-1]))
-        results: list = self.model(frames[-1])
-        frames.append(results[0].plot())
-        self.last_input: np.ndarray = frame
-        self.last_processed: np.ndarray = frames[-2]
-        self.last_result: np.ndarray = frames[-1]
+        result: MyResult  = MyResult(self.model(frames[-1])[0])
+        frames.append(result.plot_with_centers())
+        self.last_input_img: np.ndarray = frame
+        self.last_processed_img: np.ndarray = frames[-2]
+        self.last_result_img: np.ndarray = frames[-1]
+        self.last_result: Results = result
         return frames[-1]
 
     def get_last_result_image(self, source: bool = True) -> np.ndarray:
         if source:
-            return ImageProcessing.get_images_grid([self.last_input, self.last_result])
-        return self.last_result
+            return ImageProcessing.get_images_grid(
+                [self.last_input_img, self.last_result_img]
+            )
+        return self.last_result_img
 
     def train(
         self,

@@ -16,6 +16,7 @@ from ..image.image_processing import ImageProcessing
 from ..filesystem.files import create_dataset_medatada_yaml
 from ..utils.config import MY_CFG, CAMERA_LOGGING_LVL, IMAGES_PATH
 from ..utils.data_types import DatasetMetadataDict
+from ..model import ModelManager
 
 my_logger = MyLogger(
     logger_name= f'{__name__}',
@@ -386,9 +387,7 @@ class CameraManager(ABC):
             'brightness': self.brightness,
             'contrast': self.contrast,
             'saturation': self.saturation,
-            'auto_exposure': MY_CFG.camera.auto_exposure,
             'exposure': self.exposure,
-            'auto_wb': MY_CFG.camera.auto_wb,
             'wb': self.wb
         }
         create_dataset_medatada_yaml(
@@ -410,6 +409,17 @@ class CameraManager(ABC):
                 frame: np.ndarray = filter(frame)
             ImageProcessing.save_image(frame, self.save_dir_path / subfolder)
         return 0
+
+    def load_params_from_model(self, model: ModelManager) -> None:
+        self.show_filters = [model.process_frame]
+        self.save_filters = model.filters
+        self.width = model.camera_width
+        self.height = model.camera_height
+        self.brightness = model.camera_brightness
+        self.contrast = model.camera_contrast
+        self.saturation = model.camera_saturation
+        self.exposure = model.camera_exposure
+        self.wb = model.camera_wb
 
     def add_cam_prop_bars(
         self,
