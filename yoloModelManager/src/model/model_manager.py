@@ -129,7 +129,7 @@ class ModelManager:
         )
         my_logger.debug(f'Model "{self.ncnn_model_path.stem}" loaded.', Styles.SUCCEED)
 
-    def process_frame(self, frame: np.ndarray) -> list:
+    def process_frame(self, frame: np.ndarray) -> np.ndarray:
         frames: list[np.ndarray] = [frame]
         for filter in self.filters:
             frames.append(filter(frames[-1]))
@@ -138,7 +138,7 @@ class ModelManager:
         self.last_input: np.ndarray = frame
         self.last_processed: np.ndarray = frames[-2]
         self.last_result: np.ndarray = frames[-1]
-        return results
+        return frames[-1]
 
     def get_last_result_image(self, source: bool = True) -> np.ndarray:
         if source:

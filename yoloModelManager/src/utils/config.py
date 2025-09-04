@@ -6,14 +6,14 @@ from pathlib import Path
 import cv2
 import ultralytics  # Needed for setting log level
 from dotenv import load_dotenv
-from pyUtils import ConfigFileManager, MyLogger, ProjectPathsDict
+from pyUtils import ConfigFileManager, MyLogger, ProjectPathsDict, set_pyutils_logging_level
 
 
 class EnvVars(Enum):
     IMAGES_PATH = 'IMAGES_PATH'
     MODELS_PATH = 'MODELS_PATH'
     DATASETS_PATH = 'DATASETS_PATH'
-    TIMING_LOGGING_LVL = 'TIMING_LOGGING_LVL'
+    PYUTILS_LOGGING_LVL = 'PYUTILS_LOGGING_LVL'
     FILESYSTEM_LOGGING_LVL = 'FILESYSTEM_LOGGING_LVL'
     SCRIPTS_LOGGING_LVL = 'SCRIPTS_LOGGING_LVL'
     IMAGE_LOGGING_LVL = 'IMAGE_LOGGING_LVL'
@@ -57,7 +57,7 @@ def get_logging_lvl_from_env(env_var_name: str) -> int:
         return int(env_var)
     except ValueError:
         return MyLogger.get_lvl_int(str(env_var))
-TIMING_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.TIMING_LOGGING_LVL.value)
+PYUTILS_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.PYUTILS_LOGGING_LVL.value)
 FILESYSTEM_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.FILESYSTEM_LOGGING_LVL.value)
 SCRIPTS_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.SCRIPTS_LOGGING_LVL.value)
 IMAGE_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.IMAGE_LOGGING_LVL.value)
@@ -66,3 +66,4 @@ CAMERA_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.CAMERA_LOGGING_LVL.va
 ULTRALYTICS_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.ULTRALYTICS_LOGGING_LVL.value)
 cv2.setLogLevel(0) #Default 3
 logging.getLogger('ultralytics').setLevel(ULTRALYTICS_LOGGING_LVL)
+set_pyutils_logging_level(PYUTILS_LOGGING_LVL)

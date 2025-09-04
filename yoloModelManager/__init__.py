@@ -15,7 +15,6 @@ import pyUtils
 pyUtils.set_pyutils_logging_level(logging.WARNING)
 pyUtils.set_pyutils_logs_path('yoloModelManager.log')
 pyUtils.save_pyutils_logs(True)
-pyUtils.set_pyutils_logging_level(logging.DEBUG)
 
 from .src.cameras import *
 from .src.cameras.camera_manager import my_logger as camera_manager_logger

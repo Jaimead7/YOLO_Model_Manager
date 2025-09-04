@@ -29,6 +29,7 @@ class CameraInfo(TypedDict):
     name: str
     width: int
     height: int
+    brightness: int
 
 
 class CameraManager(ABC):
@@ -38,7 +39,7 @@ class CameraManager(ABC):
     ) -> None:
         self.camera_info: CameraInfo = self.select_camera(camera_id)
         with self.get_video_capture() as cap:
-            self.width, self.height = self.get_camera_resolution(cap)
+            self.get_camera_resolution(cap)
         self.show_filters = None
         self.save_filters = None
         self.save_dir_path = None
@@ -69,6 +70,14 @@ class CameraManager(ABC):
     @height.setter
     def height(self, h: int) -> None:
         self.camera_info['height'] = h
+
+    @property
+    def brightness(self) -> int:
+        return self.camera_info['brightness']
+
+    @brightness.setter
+    def brightness(self, b: int) -> None:
+        self.camera_info['brightness'] = b
 
     @property
     def show_filters(self) -> list[Callable]:
@@ -151,7 +160,8 @@ class CameraManager(ABC):
                 index= cv2_index,
                 name= cameras_info[cv2_index]['Name'],
                 width= 0, #TODO: change to cameras_info[cv2_index]['resolution']
-                height= 0
+                height= 0,
+                brightness= 255
             )
         return cameras
 
@@ -188,7 +198,10 @@ class CameraManager(ABC):
             cap.release()
 
     @time_me
-    def get_camera_resolution(self, cap: cv2.VideoCapture) -> tuple[int, int]:
+    def get_camera_resolution(
+        self,
+        cap: cv2.VideoCapture
+    ) -> tuple[int, int]:
         self.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         my_logger.info(f'Camera resolution: {self.width}x{self.height} px.')
@@ -197,13 +210,31 @@ class CameraManager(ABC):
     @time_me
     def set_camera_resolution(
         self,
-        w: int,
-        h: int,
         cap: cv2.VideoCapture
-    ) -> tuple[int, int]:
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, w)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, h)
-        return self.get_camera_resolution(cap)
+    ) -> None:
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
+        self.get_camera_resolution(cap)
+
+    @time_me
+    def get_brightness(
+        self,
+        cap: cv2.VideoCapture
+    ) -> int:
+        self.brightness = int(cap.get(cv2.CAP_PROP_BRIGHTNESS))
+        my_logger.info(f'Camera brightness: {self.brightness}.')
+        return self.brightness
+
+    @time_me
+    def set_brightness(
+        self,
+        cap: cv2.VideoCapture,
+        b: Optional[int] = None
+    ) -> None:
+        if b is None:
+            b = self.brightness
+        cap.set(cv2.CAP_PROP_BRIGHTNESS, b)
+        self.get_brightness(cap)
 
     @time_me
     def reset_window_to_camera_resolution(self) -> None:
@@ -248,15 +279,19 @@ class CameraManager(ABC):
             ImageProcessing.save_image(frame, self.save_dir_path / subfolder)
         return 0
 
-    def video_stream(
-        self,
-        width: int = 640,
-        height: int = 480
-    ) -> None:
+    def video_stream(self) -> None:
         self.keys_callbacks[27] = (self.exit, {})
         cv2.namedWindow(self.name, cv2.WINDOW_AUTOSIZE)
+        cv2.createTrackbar(
+            'Brightness',
+            self.name,
+            self.brightness,
+            255,
+            lambda x: self.set_brightness(cap, x)
+        )
         with self.get_video_capture() as cap:
-            self.set_camera_resolution(width, height, cap)
+            self.set_camera_resolution(cap)
+            self.set_brightness(cap)
             self.reset_window_to_camera_resolution()
             my_logger.debug('Starting video stream.')
             while True:
@@ -273,31 +308,6 @@ class CameraManager(ABC):
                 except KeyError:
                     if key != -1:
                         my_logger.debug(f'Key pressed: "{key}".')
-        cv2.destroyAllWindows()
-
-    def model_stream(
-        self,
-        model: ModelManager
-    ) -> None:
-        self.keys_callbacks[27] = (self.exit, {})
-        cv2.namedWindow(self.name, cv2.WINDOW_AUTOSIZE)
-        self.save_filters = model.filters
-        with self.get_video_capture() as cap:
-            self.set_camera_resolution(model.camera_width, model.camera_height, cap)
-            self.reset_window_to_camera_resolution()
-            my_logger.debug('Starting video stream.')
-            while True:
-                self.last_frame: np.ndarray = self.get_frame(cap)
-                model.process_frame(self.last_frame)
-                frame_compose: np.ndarray = model.get_last_result_image()
-                cv2.imshow(self.name, frame_compose)
-                key: int = cv2.waitKey(1)
-                try:
-                    if self.keys_callbacks[key][0](**self.keys_callbacks[key][1]) < 0:
-                        break
-                except KeyError:
-                    if key != -1:
-                        my_logger.debug(f'Key pressed: {key}')
         cv2.destroyAllWindows()
 
 

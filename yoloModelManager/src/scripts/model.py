@@ -51,15 +51,20 @@ def test_model(
     save_path: Optional[Path] = None
 ) -> None:
     my_logger.debug(f'Executed: test-model -m {model_name} -c {camera} -p {save_path}')
-    camera_manager: CameraManager = camera_manager_factory(camera)
     model: ModelManager = ModelManager(model_name)
+    camera_manager: CameraManager = camera_manager_factory(camera)
+    camera_manager.show_filters = [model.process_frame]
+    camera_manager.save_filters = model.filters
     camera_manager.save_dir_path = save_path
+    camera_manager.width = model.camera_width
+    camera_manager.height = model.camera_height
     camera_manager.keys_callbacks = {
         32: (camera_manager.save_last_frame, {})
     }
-    camera_manager.model_stream(
-        model= model
-    )
+    camera_manager.video_stream()
+    #camera_manager.model_stream(
+    #    model= model
+    #)
 
 
 @click.command()
