@@ -9,13 +9,12 @@ import numpy as np
 import yaml
 from pyUtils import MyLogger, Styles
 from ultralytics import YOLO
-from ultralytics.engine.results import Results
 
 from ..filesystem import TrainingDatasetDirManager
 from ..image import ImageProcessing
 from ..utils import (MODEL_LOGGING_LVL, MODELS_PATH, ULTRALYTICS_LOGGING_LVL,
                      ModelMetadataDict)
-from .result import MyResult, ResultTracker
+from .results import ResultTracker
 
 my_logger = MyLogger(
     logger_name= f'{__name__}',

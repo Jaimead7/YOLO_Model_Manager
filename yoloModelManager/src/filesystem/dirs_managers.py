@@ -6,7 +6,7 @@ import yaml
 from pyUtils import MyLogger, Styles
 
 from ..utils import (DATASETS_PATH, FILESYSTEM_LOGGING_LVL, IMAGES_PATH,
-                     DatasetMetadataDict, ModelTasks, ModelTrainingDataDict)
+                     DatasetDataDict, DatasetMetadataDict, ModelTasks)
 from .dirs import check_dir_path, unzip_dir
 from .files import ALLOWED_IMAGES_EXTENSIONS, copy_files
 
@@ -154,9 +154,9 @@ class TrainingDatasetDirManager:
         return self.path / 'data.yaml'
 
     @property
-    def data(self) -> ModelTrainingDataDict:
+    def data(self) -> DatasetDataDict:
         with open(self.data_yaml_file_path, 'r') as f:
-            data: ModelTrainingDataDict = yaml.safe_load(f) #TODO: validate file
+            data: DatasetDataDict = yaml.safe_load(f) #TODO: validate file
         return data
 
     @property
@@ -259,7 +259,7 @@ class TrainingDatasetDirManager:
                 if len(line.strip()) > 0
             }
         n_classes: int = len(classes)
-        data: ModelTrainingDataDict = {
+        data: DatasetDataDict = {
             'path': str(self.path),
             'task': str(ModelTasks.DETECT.value),
             'train': 'train/images',

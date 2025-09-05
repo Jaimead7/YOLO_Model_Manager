@@ -1,8 +1,8 @@
 import platform
 import subprocess
-from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
+from datetime import datetime, timezone
 from pathlib import Path
 from pprint import pprint
 from sys import exit
@@ -12,11 +12,11 @@ import cv2
 import numpy as np
 from pyUtils import MyLogger, time_me
 
+from ..filesystem.files import create_dataset_medatada_yaml, save_image
 from ..image.image_processing import ImageProcessing
-from ..filesystem.files import create_dataset_medatada_yaml
-from ..utils.config import MY_CFG, CAMERA_LOGGING_LVL, IMAGES_PATH
+from ..model.model_manager import ModelManager
+from ..utils.config import CAMERA_LOGGING_LVL, IMAGES_PATH, MY_CFG
 from ..utils.data_types import DatasetMetadataDict
-from ..model import ModelManager
 
 my_logger = MyLogger(
     logger_name= f'{__name__}',
@@ -402,12 +402,12 @@ class CameraManager(ABC):
         except:
             subfolder = Path("")
         if len(self.save_filters) == 0:
-            ImageProcessing.save_image(self.last_frame, self.save_dir_path / subfolder)
+            save_image(self.last_frame, self.save_dir_path / subfolder)
         else:
             frame: np.ndarray = self.last_frame
             for filter in self.save_filters:
                 frame: np.ndarray = filter(frame)
-            ImageProcessing.save_image(frame, self.save_dir_path / subfolder)
+            save_image(frame, self.save_dir_path / subfolder)
         return 0
 
     def load_params_from_model(self, model: ModelManager) -> None:

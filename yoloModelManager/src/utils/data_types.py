@@ -10,7 +10,7 @@ class ModelTasks(Enum):
     POSE = 'pose'
 
 
-class ModelTrainingDataDict(TypedDict):
+class DatasetDataDict(TypedDict):
     path: str
     task: str
     train: str

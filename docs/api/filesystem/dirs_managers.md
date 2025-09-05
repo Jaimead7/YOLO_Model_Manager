@@ -116,7 +116,7 @@ TrainingDir
 > [**DatasetDirManager**](#datasetdirmanager) object for the tests subdir.  
 - **data_yaml_file_path**: *Path*  
 > Absolute path of the `data.yaml` file.  
-- **data**: [ModelTrainingDataDict](../utils/data_types.md/#modeltrainingdatadict)  
+- **data**: [DatasetDataDict](../utils/data_types.md/#datasetdatadict)  
 > Content of the `data.yaml` file.  
 - **metadata_yaml_file_path**: *Path*  
 > Absolute path of the `metadata.yaml` file.  
