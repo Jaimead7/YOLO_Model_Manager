@@ -169,6 +169,16 @@ class TrainingDatasetDirManager:
             metadata: DatasetMetadataDict = yaml.safe_load(f) #TODO: validate file
         return metadata
 
+    def __repr__(self) -> str:
+        return (f'{self.__class__.__name__}(\n'
+                f'  • path= "{self.path}",\n'
+                f'  • train_dir= {self.train_dir},\n'
+                f'  • validation_dir= {self.validation_dir},\n'
+                f'  • test_dir= {self.test_dir}\n)')
+
+    def __str__(self) -> str:
+        return (f'{self.__class__.__name__}("{self.path}")')
+
     def set_paths(self) -> None:
         try:
             self.train_dir: DatasetDirManager = DatasetDirManager(
@@ -203,16 +213,6 @@ class TrainingDatasetDirManager:
         except AttributeError:
             my_logger.warning('Can\'t set paths. No "path" is defined.')
 
-    def __repr__(self) -> str:
-        return (f'{self.__class__.__name__}(\n'
-                f'  • path= "{self.path}",\n'
-                f'  • train_dir= {self.train_dir},\n'
-                f'  • validation_dir= {self.validation_dir},\n'
-                f'  • test_dir= {self.test_dir}\n)')
-
-    def __str__(self) -> str:
-        return (f'{self.__class__.__name__}("{self.path}")')
-
     def split(
         self,
         validation: float = 0.2,
@@ -244,6 +244,7 @@ class TrainingDatasetDirManager:
         self.test_dir.add_data(images_lists[2], labels_lists[2])
         if self.source_dataset_dir.metadata_path.is_file():
             copy_files([self.source_dataset_dir.metadata_path], self.path)
+        self.create_yaml_data_file()
         my_logger.debug(
             f'{self.source_dataset_dir.path.name} splited into {self.path.name}.',
             Styles.SUCCEED

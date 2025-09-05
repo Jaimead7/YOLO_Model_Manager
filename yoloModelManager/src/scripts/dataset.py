@@ -80,4 +80,3 @@ def split_dataset(
     if images_source is not None:
         dirManager.source_dataset_dir.add_images(images_source)
     dirManager.split(validation= validation, test= test)
-    dirManager.create_yaml_data_file()

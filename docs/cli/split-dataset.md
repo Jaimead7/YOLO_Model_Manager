@@ -64,4 +64,4 @@ splited_dataset
 
 ### Files examples:  
 - [metadata.yaml](../examples/model.metadata.yaml)  
-- [data.yaml](../examples/modelTraining.data.yaml)  
+- [data.yaml](../examples/dataset.data.yaml)  

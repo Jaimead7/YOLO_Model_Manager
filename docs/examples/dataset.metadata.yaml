@@ -8,10 +8,3 @@ contrast: 32.0
 saturation: 32.0
 exposure: 42.0
 wb: 0.0
-train_images: 175
-val_images: 50
-test:images: 25
-task: detect
-name:
-  0: "CLASS 1"
-  1: "CLASS 2"

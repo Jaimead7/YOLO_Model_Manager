@@ -4,6 +4,6 @@ train: train/images
 val: validation/images
 test: test/images
 nc: 2
-names:
+name:
   0: "CLASS 1"
   1: "CLASS 2"
