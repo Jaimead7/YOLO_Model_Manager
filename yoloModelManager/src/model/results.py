@@ -10,7 +10,10 @@ from ultralytics.engine.results import (OBB, Boxes, Keypoints, Masks, Probs,
                                         Results)
 from ultralytics.utils.plotting import Annotator, Colors
 
-from ..utils.config import RESULT_X_TOLERANCE, RESULT_Y_TOLERANCE
+from ..utils.config import (RESULT_BORDER_THICKNESS, RESULT_BOX_MARGIN,
+                            RESULT_CENTER_THICKNESS, RESULT_FONT_SCALE,
+                            RESULT_TEXT_THICKNESS, RESULT_X_TOLERANCE,
+                            RESULT_Y_TOLERANCE)
 
 
 class Point(tuple):
@@ -42,13 +45,11 @@ class Point(tuple):
 class Box(np.ndarray):
     def __new__(
         cls,
-        input_array,
-        conf: float,
-        object_n: int
+        input_array
     ) -> Self:
         obj: Self = np.asarray(input_array).view(cls)
-        obj.conf = conf
-        obj.object_n = object_n
+        obj.conf = obj[-2]
+        obj.object_n = obj[-1]
         return obj
 
     def __array_finalize__(self, obj) -> None:
@@ -101,6 +102,9 @@ class Box(np.ndarray):
     def height(self) -> int:
         return self.sup_left_corner.y + self.inf_right_corner.y
 
+    def to_nparray(self) -> np.ndarray:
+        return self.view(np.ndarray)
+
     def get_center(self) -> Point:
         x = int(self.width / 2)
         y = int(self.height / 2)
@@ -121,35 +125,40 @@ class Box(np.ndarray):
     def center_distance(self, other: Box) -> float:
         return self.center.distance(other.center)
 
-    def add_square_to_img(self, img: np.ndarray, names: dict[int, str]) -> np.ndarray:
-        #TODO: Use global params
+    def add_square_to_img(self, img: np.ndarray) -> np.ndarray:
         color: tuple = Colors()(self.object_n, bgr= True)
-        text_color: tuple = Annotator(img).get_txt_color(color)
-        text: str = f'{names[self.object_n]} {self.conf:.2f}'
-        font: int = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale: float = 0.5
-        text_thickness: int = 1
-        border_thickness: int = 2
-        (txt_w, txt_h), _ = cv2.getTextSize(
-            text,
-            font,
-            font_scale,
-            text_thickness
-        )
-        text_sup_left_corner = Point(
-            self.sup_left_corner.x - border_thickness,
-            self.sup_left_corner.y + border_thickness
-        )
-        text_inf_right_corner = Point(
-            self.sup_left_corner.x + txt_w + border_thickness,
-            self.sup_left_corner.y - txt_h - border_thickness
-        )
         cv2.rectangle(
             img= img,
             pt1= self.sup_left_corner,
             pt2= self.inf_right_corner,
             color= color,
-            thickness= border_thickness
+            thickness= RESULT_BORDER_THICKNESS
+        )
+        return img
+
+    def add_tag_to_img(
+        self,
+        img: np.ndarray,
+        p0: Point,
+        names: dict[int, str]
+    ) -> np.ndarray:
+        color: tuple = Colors()(self.object_n, bgr= True)
+        text: str = f'{names[self.object_n]} {self.conf:.2f}'
+        font: int = cv2.FONT_HERSHEY_SIMPLEX
+        text_color: tuple = Annotator(img).get_txt_color(color)
+        (txt_w, txt_h), _ = cv2.getTextSize(
+            text,
+            font,
+            RESULT_FONT_SCALE,
+            RESULT_TEXT_THICKNESS
+        )
+        text_sup_left_corner = Point(
+            p0.x - RESULT_BORDER_THICKNESS,
+            p0.y + RESULT_BORDER_THICKNESS
+        )
+        text_inf_right_corner = Point(
+            p0.x + txt_w + RESULT_BORDER_THICKNESS,
+            p0.y - txt_h - RESULT_BORDER_THICKNESS
         )
         cv2.rectangle(
             img= img,
@@ -161,17 +170,23 @@ class Box(np.ndarray):
         cv2.putText(
             img= img,
             text= text,
-            org= self.sup_left_corner,
+            org= p0,
             fontFace= cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale= font_scale,
+            fontScale= RESULT_FONT_SCALE,
             color= text_color,
-            thickness= text_thickness,
+            thickness= RESULT_TEXT_THICKNESS,
         )
         return img
 
     def add_center_to_img(self, img: np.ndarray) -> np.ndarray:
         color: tuple = Colors()(self.object_n, bgr= True)
-        cv2.circle(img, self.center, 10, color, -1)
+        cv2.circle(
+            img,
+            self.center,
+            RESULT_CENTER_THICKNESS,
+            color,
+            -1
+        )
         return img
 
 
@@ -180,41 +195,23 @@ class MyBoxes(Boxes):
         self,
         boxes: Tensor | np.ndarray | Boxes,
         orig_shape: tuple[int, int],
+        check_boxes: bool = True
     ) -> None:
         if isinstance(boxes, Boxes):
             orig_shape = boxes.orig_shape
             boxes = boxes.data
         super().__init__(boxes, orig_shape)
-        if isinstance(self.xyxy, Tensor):
-            corners_array: np.ndarray = self.xyxy.cpu().numpy()
-        else:
-            corners_array: np.ndarray = self.xyxy
-        if isinstance(self.conf, Tensor):
-            conf_array: np.ndarray = self.conf.cpu().numpy()
-        else:
-            conf_array: np.ndarray = self.conf
-        if isinstance(self.cls, Tensor):
-            cls_array: np.ndarray = self.cls.cpu().numpy()
-        else:
-            cls_array: np.ndarray = self.cls
         self._boxes: list[Box] = [
-            Box(*box)
-            for box in zip(corners_array, conf_array, cls_array)
+            Box(box)
+            for box in self.data
         ]
-        self._completed_boxes: list[Box] = self.get_completed_boxes()
-        self._valid_boxes: list[Box] = self.get_valid_boxes()
+        if check_boxes:
+            self.completed_boxes: Optional[MyBoxes] = self.get_completed_boxes()
+            self.valid_boxes: Optional[MyBoxes] = self.get_valid_boxes()
 
     @property
     def boxes(self) -> list[Box]:
         return self._boxes
-
-    @property
-    def completed_boxes(self) -> list[Box]:
-        return self._completed_boxes
-
-    @property
-    def valid_boxes(self) -> list[Box]:
-        return self._valid_boxes
 
     @property
     def centers(self) -> list[Point]:
@@ -223,30 +220,41 @@ class MyBoxes(Boxes):
             for box in self.boxes
         ]
 
-    def get_completed_boxes(self) -> list[Box]:
-        return [
-            box
+    def __len__(self) -> int:
+        return len(self.boxes)
+
+    def get_completed_boxes(self) -> Optional[MyBoxes]:
+        list_of_box: list[np.ndarray] = [
+            box.to_nparray()
             for box in self.boxes
             if box.is_complete(self.orig_shape[1], self.orig_shape[0])
         ]
+        if len(list_of_box) == 0:
+            return None
+        return MyBoxes(np.array(list_of_box), self.orig_shape, False)
 
-    def get_valid_boxes(self) -> list[Box]:
+    def get_valid_boxes(self) -> Optional[MyBoxes]:
+        if self.completed_boxes is None:
+            return None
         n: int = len(self.completed_boxes)
-        valid_boxes: list[Box] = []
+        valid_boxes: list[np.ndarray] = []
         for i in range(n):
-            actual_box: Box = self.completed_boxes[i]
+            actual_box: Box = self.completed_boxes.boxes[i]
             is_alone = True
             is_best = True
             for j in range(n):
-                if i != j:
-                    if actual_box.center_distance(self.completed_boxes[j]) <= 20:
-                        is_alone = False
-                        if self.completed_boxes[j].conf >= actual_box.conf:
-                            is_best = False
-                            break
+                if j == i:
+                    continue
+                if actual_box.center_distance(self.completed_boxes.boxes[j]) <= RESULT_BOX_MARGIN:
+                    is_alone = False
+                    if self.completed_boxes[j].conf >= actual_box.conf:
+                        is_best = False
+                        break
             if is_alone or is_best:
-                valid_boxes.append(actual_box)
-        return valid_boxes
+                valid_boxes.append(actual_box.to_nparray())
+        if len(valid_boxes) == 0:
+            return None
+        return MyBoxes(np.array(valid_boxes), self.orig_shape, False)
 
 
 class MyResults(Results):
@@ -282,24 +290,31 @@ class MyResults(Results):
             self._boxes: Optional[MyBoxes] = MyBoxes(boxes, boxes.orig_shape)
 
     @property
-    def completed_boxes(self) -> list[Box]:
+    def completed_boxes(self) -> Optional[MyBoxes]:
         if self.boxes is None:
-            return []
+            return None
         return self.boxes.completed_boxes
 
     @property
-    def valid_boxes(self) -> list[Box]:
+    def valid_boxes(self) -> Optional[MyBoxes]:
         if self.boxes is None:
-            return []
+            return None
         return self.boxes.valid_boxes
 
     def plot_tracker(self) -> np.ndarray:
         img: np.ndarray = self.orig_img
-        if self.boxes is not None:
-            for box in reversed(self.boxes.boxes):
-                img = box.add_square_to_img(img, self.names)
+        if self.valid_boxes is not None:
+            for box in reversed(self.valid_boxes.boxes):
                 img = box.add_center_to_img(img)
-        return self.plot()
+                img = box.add_tag_to_img(
+                    img,
+                    box.center + Point(
+                        RESULT_CENTER_THICKNESS,
+                        -RESULT_CENTER_THICKNESS
+                    ),
+                    self.names
+                )
+        return img
 
 
 class ResultTracker:

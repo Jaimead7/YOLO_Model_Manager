@@ -49,8 +49,13 @@ DATASETS_PATH: Path = Path(getenv(
 # CONSTANTS FROM config.toml (Only readed on start for speed)
 YOLO_IMAGE_WIDTH: int = MY_CFG.model.yolo_image_input_width
 YOLO_IMAGE_HEIGHT: int = MY_CFG.model.yolo_image_input_height
-RESULT_X_TOLERANCE: int = MY_CFG.model.result_x_tolerance
-RESULT_Y_TOLERANCE: int = MY_CFG.model.result_y_tolerance
+RESULT_BOX_MARGIN: int = MY_CFG.model.result.box_margin
+RESULT_X_TOLERANCE: int = MY_CFG.model.result.x_tolerance
+RESULT_Y_TOLERANCE: int = MY_CFG.model.result.y_tolerance
+RESULT_BORDER_THICKNESS: int = MY_CFG.model.result.border_thickness
+RESULT_FONT_SCALE: int = MY_CFG.model.result.font_scale
+RESULT_TEXT_THICKNESS: int = MY_CFG.model.result.text_thickness
+RESULT_CENTER_THICKNESS: int = MY_CFG.model.result.center_thickness
 
 # LOGGING LEVELS
 #TODO: change to pyUtils
