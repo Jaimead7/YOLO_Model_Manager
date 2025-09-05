@@ -176,9 +176,15 @@ class Box(np.ndarray):
 
 
 class MyBoxes(Boxes):
-    def __init__(self, boxes: Boxes, parent: MyResults) -> None:
-        super().__init__(boxes.data, boxes.orig_shape)
-        self._parent: MyResults = parent
+    def __init__(
+        self,
+        boxes: Tensor | np.ndarray | Boxes,
+        orig_shape: tuple[int, int],
+    ) -> None:
+        if isinstance(boxes, Boxes):
+            orig_shape = boxes.orig_shape
+            boxes = boxes.data
+        super().__init__(boxes, orig_shape)
         if isinstance(self.xyxy, Tensor):
             corners_array: np.ndarray = self.xyxy.cpu().numpy()
         else:
@@ -221,7 +227,7 @@ class MyBoxes(Boxes):
         return [
             box
             for box in self.boxes
-            if box.is_complete(self._parent.img_w, self._parent.img_h)
+            if box.is_complete(self.orig_shape[1], self.orig_shape[0])
         ]
 
     def get_valid_boxes(self) -> list[Box]:
@@ -250,12 +256,11 @@ class MyResults(Results):
             path= result.path,
             names= result.names
         )
-        self.boxes: Optional[Boxes] = result.boxes
+        self.boxes = result.boxes
         self.masks: Optional[Masks] = result.masks
         self.keypoints: Optional[Keypoints] = result.keypoints
         self.probs: Optional[Probs | Tensor] = result.probs
         self.obb: Optional[OBB] = result.obb
-        self.my_boxes = self.boxes
 
     @property
     def img_w(self) -> int:
@@ -266,34 +271,35 @@ class MyResults(Results):
         return self.orig_img.shape[0]
 
     @property
-    def my_boxes(self) -> Optional[MyBoxes]:
+    def boxes(self) -> Optional[MyBoxes]:
         return self._boxes
 
-    @my_boxes.setter
-    def my_boxes(self, boxes: Optional[Boxes]) -> None:
+    @boxes.setter
+    def boxes(self, boxes: Optional[Boxes]) -> None:
         if boxes is None:
             self._boxes: Optional[MyBoxes] = None
         else:
-            self._boxes: Optional[MyBoxes] = MyBoxes(boxes, self)
+            self._boxes: Optional[MyBoxes] = MyBoxes(boxes, boxes.orig_shape)
 
     @property
     def completed_boxes(self) -> list[Box]:
-        if self.my_boxes is None:
+        if self.boxes is None:
             return []
-        return self.my_boxes.completed_boxes
+        return self.boxes.completed_boxes
 
     @property
     def valid_boxes(self) -> list[Box]:
-        if self.my_boxes is None:
+        if self.boxes is None:
             return []
-        return self.my_boxes.valid_boxes
+        return self.boxes.valid_boxes
 
     def plot_tracker(self) -> np.ndarray:
         img: np.ndarray = self.orig_img
-        for box in reversed(self.completed_boxes):
-            img = box.add_square_to_img(img, self.names)
-            img = box.add_center_to_img(img)
-        return img
+        if self.boxes is not None:
+            for box in reversed(self.boxes.boxes):
+                img = box.add_square_to_img(img, self.names)
+                img = box.add_center_to_img(img)
+        return self.plot()
 
 
 class ResultTracker:
