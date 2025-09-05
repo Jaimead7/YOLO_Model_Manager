@@ -6,7 +6,8 @@ from pathlib import Path
 import cv2
 import ultralytics  # Needed for setting log level
 from dotenv import load_dotenv
-from pyUtils import ConfigFileManager, MyLogger, ProjectPathsDict, set_pyutils_logging_level
+from pyUtils import (ConfigFileManager, MyLogger, ProjectPathsDict,
+                     set_pyutils_logging_level)
 
 
 class EnvVars(Enum):
@@ -45,9 +46,11 @@ DATASETS_PATH: Path = Path(getenv(
     _MY_PACKAGE[ProjectPathsDict.DIST_PATH] / 'datasets'
 ))
 
-# CONSTANTS
+# CONSTANTS FROM config.toml (Only readed on start for speed)
 YOLO_IMAGE_WIDTH: int = MY_CFG.model.yolo_image_input_width
 YOLO_IMAGE_HEIGHT: int = MY_CFG.model.yolo_image_input_height
+RESULT_X_TOLERANCE: int = MY_CFG.model.result_x_tolerance
+RESULT_Y_TOLERANCE: int = MY_CFG.model.result_y_tolerance
 
 # LOGGING LEVELS
 #TODO: change to pyUtils

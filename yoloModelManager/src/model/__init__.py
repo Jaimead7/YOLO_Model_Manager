@@ -1,2 +1,2 @@
 from .model_manager import ModelManager
-from .results import MyResult, ResultTracker
+from .results import MyResults, ResultTracker

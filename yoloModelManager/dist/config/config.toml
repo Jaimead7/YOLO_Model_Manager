@@ -1,6 +1,8 @@
 [model]
     yolo_image_input_width = 640
     yolo_image_input_height = 640
+    result_x_tolerance = 2
+    result_y_tolerance = 2
 
 [camera]
     brightness = 128.0

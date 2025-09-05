@@ -49,7 +49,7 @@ class CameraManager(ABC):
         self.show_filters = None
         self.save_filters = None
         self.save_dir_path = None
-        self.keys_callbacks: dict[int, tuple[Callable, dict]] = {} #TODO: add parameters to callbacks
+        self.keys_callbacks: dict[int, tuple[Callable, dict]] = {}
         my_logger.info(f'Camera set to: {self.camera_info}.')
         super().__init__()
 

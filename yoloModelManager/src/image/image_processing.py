@@ -47,7 +47,7 @@ class ImageProcessing:
         width: int = YOLO_IMAGE_WIDTH,
         height: int = YOLO_IMAGE_HEIGHT
     ) -> np.ndarray:
-        ... #TODO
+        ... #TODO: Do cut filter
         return img
 
     @staticmethod

@@ -139,7 +139,7 @@ class ModelManager:
             my_logger.warning(f'Model "{self.pt_model_path.stem}" not exported. NCNN model already exists.')
             return
         model = YOLO(self.pt_model_path)
-        model.export(format= 'ncnn') #FIXME: verbose= False
+        model.export(format= 'ncnn')
         self.pt_model_path.with_suffix('.torchscript').unlink()
         (self.ncnn_model_path / 'model_ncnn.py').unlink()
         my_logger.debug(f'Model "{self.pt_model_path.stem}" exported to NCNN.', Styles.SUCCEED)
