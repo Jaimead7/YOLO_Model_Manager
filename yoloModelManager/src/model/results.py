@@ -301,19 +301,23 @@ class MyResults(Results):
             return None
         return self.boxes.valid_boxes
 
-    def plot_tracker(self) -> np.ndarray:
+    def plot_tracker(self, base_image: Optional[np.ndarray] = None) -> np.ndarray:
         img: np.ndarray = self.orig_img
+        if base_image is not None:
+            img = base_image
         if self.valid_boxes is not None:
             for box in reversed(self.valid_boxes.boxes):
                 img = box.add_center_to_img(img)
-                img = box.add_tag_to_img(
-                    img,
-                    box.center + Point(
-                        RESULT_CENTER_THICKNESS,
-                        -RESULT_CENTER_THICKNESS
-                    ),
-                    self.names
-                )
+                if base_image is not None:
+                    img = box.add_square_to_img(img)
+                    img = box.add_tag_to_img(
+                        img,
+                        box.center + Point(
+                            RESULT_CENTER_THICKNESS,
+                            -RESULT_CENTER_THICKNESS
+                        ),
+                        self.names
+                    )
         return img
 
 
