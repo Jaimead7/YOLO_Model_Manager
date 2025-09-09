@@ -308,7 +308,7 @@ class MyResults(Results):
         if self.valid_boxes is not None:
             for box in reversed(self.valid_boxes.boxes):
                 img = box.add_center_to_img(img)
-                if base_image is not None:
+                if base_image is None:
                     img = box.add_square_to_img(img)
                     img = box.add_tag_to_img(
                         img,

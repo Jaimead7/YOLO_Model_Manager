@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from pprint import pprint
 from sys import exit
+from time import sleep
 from typing import Any, Callable, Generator, Optional, TypedDict
 
 import cv2
@@ -218,6 +219,9 @@ class CameraManager(ABC):
                 for camera in cameras.values():
                     if camera['index'] == camera_id:
                         return camera
+                msg: str = f'No camera for index {camera_id} was found.'
+                my_logger.error(msg)
+                raise ValueError(msg)
             print('Available cameras:')
             pprint(cameras)
             user_input: str = input('Select a camera index: ')
@@ -377,7 +381,7 @@ class CameraManager(ABC):
         return frame
 
     def exit(self, *args, **kwargs) -> int:
-        my_logger.info('Stopping model stream...')
+        my_logger.info('Stopping stream...')
         data: DatasetMetadataDict = {
             'date': datetime.now(timezone.utc),
             'camera_width': self.width,
@@ -499,6 +503,7 @@ class CameraManager(ABC):
                         print(f'CAP_PROP_WB_TEMPERATURE -> {cap.get(cv2.CAP_PROP_WB_TEMPERATURE)}')
                         print(f'CAP_PROP_AUTO_WB -> {cap.get(cv2.CAP_PROP_AUTO_WB)}')
                         my_logger.debug(f'Key pressed: "{key}".')
+                sleep(0.2) #DELETE:
         cv2.destroyAllWindows()
 
 
