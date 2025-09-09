@@ -7,21 +7,15 @@ from typing import Any, Callable
 
 import numpy as np
 import yaml
-from pyUtils import MyLogger, Styles
+from pyUtils import Styles
 from ultralytics import YOLO
 
 from ..filesystem import TrainingDatasetDirManager
 from ..image import ImageProcessing
-from ..utils import (MODEL_LOGGING_LVL, MODELS_PATH, ULTRALYTICS_LOGGING_LVL,
-                     ModelMetadataDict)
+from ..utils.config import (MODELS_PATH, ULTRALYTICS_LOGGING_LVL,
+                            my_logger)
+from ..utils.data_types import ModelMetadataDict
 from .results import ResultTracker
-
-my_logger = MyLogger(
-    logger_name= f'{__name__}',
-    logging_level= MODEL_LOGGING_LVL,
-    file_path= 'yoloModelManager.log',
-    save_logs= False
-)
 
 
 class ModelManager:

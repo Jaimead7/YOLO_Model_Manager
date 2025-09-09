@@ -1,3 +1,4 @@
+import atexit
 import platform
 import subprocess
 from abc import ABC, abstractmethod
@@ -11,20 +12,13 @@ from typing import Any, Callable, Generator, Optional, TypedDict
 
 import cv2
 import numpy as np
-from pyUtils import MyLogger, time_me
+from pyUtils import time_me
 
 from ..filesystem.files import create_dataset_medatada_yaml, save_image
 from ..image.image_processing import ImageProcessing
 from ..model.model_manager import ModelManager
-from ..utils.config import CAMERA_LOGGING_LVL, IMAGES_PATH, MY_CFG
+from ..utils.config import IMAGES_PATH, MY_CFG, my_logger
 from ..utils.data_types import DatasetMetadataDict
-
-my_logger = MyLogger(
-    logger_name= f'{__name__}',
-    logging_level= CAMERA_LOGGING_LVL,
-    file_path= 'yoloModelManager.log',
-    save_logs= False
-)
 
 
 class CameraInfo(TypedDict):
@@ -44,6 +38,7 @@ class CameraManager(ABC):
         self,
         camera_id: Optional[int] = None
     ) -> None:
+        atexit.register(self.cleanup)
         self.camera_info: CameraInfo = self.select_camera(camera_id)
         with self.get_video_capture() as cap:
             self.get_camera_resolution(cap)
@@ -233,15 +228,20 @@ class CameraManager(ABC):
 
     @contextmanager
     def get_video_capture(self) -> Generator[cv2.VideoCapture, Any, None]:
-        cap: cv2.VideoCapture = cv2.VideoCapture(self.camera)
-        if not cap.isOpened():
+        self._cap: cv2.VideoCapture = cv2.VideoCapture(self.camera)
+        if not self._cap.isOpened():
             msg: str = 'Can\'t connect to the camera.'
             my_logger.error(f'ConnectionRefusedError: {msg}')
             raise ConnectionRefusedError(msg)
         try:
-            yield cap
+            yield self._cap
         finally:
-            cap.release()
+            self._cap.release()
+
+    def cleanup(self) -> None:
+        if self._cap is not None:
+            self._cap.release()
+            my_logger.debug(f'Camera {self.name} cleared.')
 
     @time_me
     def get_camera_resolution(
@@ -367,18 +367,17 @@ class CameraManager(ABC):
         cv2.resizeWindow(self.name, self.width, self.height)
         my_logger.debug(f'Window resize to: {self.width}x{self.height} px.')
 
-    @staticmethod
-    def get_frame(
+    def capture_frame(
+        self,
         cap: cv2.VideoCapture
-    ) -> np.ndarray:
+    ) -> None:
         ret: bool
-        frame: np.ndarray
-        ret, frame = cap.read()
+        self.last_frame: np.ndarray
+        ret, self.last_frame = cap.read()
         if not ret:
             msg: str = 'Can\'t read frame.'
             my_logger.error(f'RuntimeError: {msg}')
             raise RuntimeError(msg)
-        return frame
 
     def exit(self, *args, **kwargs) -> int:
         my_logger.info('Stopping stream...')
@@ -482,7 +481,7 @@ class CameraManager(ABC):
             self.reset_window_to_camera_resolution()
             my_logger.debug('Starting video stream.')
             while True:
-                self.last_frame: np.ndarray = self.get_frame(cap)
+                self.capture_frame(cap)
                 frames: list[np.ndarray] = [self.last_frame]
                 for filter in self.show_filters:
                     frames.append(filter(self.last_frame))
@@ -547,7 +546,7 @@ class LinuxCamerasManager(CameraManager):
             text= True
         )
         if result.returncode != 0:
-            msg: str = '"vl4l2-ctl --list-devices" failed.'
+            msg: str = '"v4l2-ctl --list-devices" failed.'
             my_logger.error(f'RuntimeError: {msg}')
             raise RuntimeError(msg)
         device_info: list[str] = [

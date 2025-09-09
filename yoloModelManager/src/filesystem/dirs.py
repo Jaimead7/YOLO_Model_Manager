@@ -3,16 +3,9 @@ import zipfile
 from pathlib import Path
 from typing import Any, Literal
 
-from pyUtils import MyLogger, Styles
+from pyUtils import Styles
 
-from ..utils import FILESYSTEM_LOGGING_LVL
-
-my_logger = MyLogger(
-    logger_name= f'{__name__}',
-    logging_level= FILESYSTEM_LOGGING_LVL,
-    file_path= 'yoloModelManager.log',
-    save_logs= False
-)
+from ..utils.config import my_logger
 
 
 def unzip_dir(dir: Path) -> Path:

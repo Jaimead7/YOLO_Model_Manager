@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from psutil import disk_usage
 from pathlib import Path
 from shutil import copy2
 from typing import Optional
@@ -7,17 +8,11 @@ from uuid import uuid4
 import cv2
 import numpy as np
 import yaml
-from pyUtils import MyLogger, Styles
+from pyUtils import Styles
 
-from ..utils.config import FILESYSTEM_LOGGING_LVL, IMAGES_PATH
+from ..utils.config import IMAGES_PATH, my_logger
 from ..utils.data_types import DatasetMetadataDict
 
-my_logger = MyLogger(
-    logger_name= f'{__name__}',
-    logging_level= FILESYSTEM_LOGGING_LVL,
-    file_path= 'yoloModelManager.log',
-    save_logs= False
-)
 
 ALLOWED_IMAGES_EXTENSIONS: set[str] = {
     '.png',
@@ -71,10 +66,13 @@ def save_image(
         parents= True,
         exist_ok= True
     )
-    if cv2.imwrite(str(image_path), image):
-        my_logger.debug(f'New image saved to "{image_path}"', Styles.SUCCEED)
+    if disk_usage('/').percent < 80:
+        if cv2.imwrite(str(image_path), image):
+            my_logger.debug(f'New image saved to "{image_path}"', Styles.SUCCEED)
+        else:
+            msg: str = f'Failed to save image to "{image_path.parent}". Check if directory exists.'
+            my_logger.error(f'RuntimeError: {msg}')
+            raise RuntimeError(msg)
     else:
-        msg: str = f'Failed to save image to "{image_path.parent}". Check if directory exists.'
-        my_logger.error(f'RuntimeError: {msg}')
-        raise RuntimeError(msg)
+        my_logger.warning(f'Can\'t save image to "{image_path.parent}". Disk is full.')
     return image_path

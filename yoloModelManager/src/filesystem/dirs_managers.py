@@ -3,19 +3,12 @@ from random import shuffle
 from typing import Any, Optional
 
 import yaml
-from pyUtils import MyLogger, Styles
+from pyUtils import Styles
 
-from ..utils import (DATASETS_PATH, FILESYSTEM_LOGGING_LVL, IMAGES_PATH,
-                     DatasetDataDict, DatasetMetadataDict, ModelTasks)
+from ..utils.config import DATASETS_PATH, IMAGES_PATH, my_logger
+from ..utils.data_types import DatasetDataDict, DatasetMetadataDict, ModelTasks
 from .dirs import check_dir_path, unzip_dir
 from .files import ALLOWED_IMAGES_EXTENSIONS, copy_files
-
-my_logger = MyLogger(
-    logger_name= f'{__name__}',
-    logging_level= FILESYSTEM_LOGGING_LVL,
-    file_path= 'yoloModelManager.log',
-    save_logs= False
-)
 
 
 class DatasetDirManager:

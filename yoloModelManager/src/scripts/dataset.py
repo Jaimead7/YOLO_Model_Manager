@@ -1,17 +1,9 @@
 from pathlib import Path
 
 import click
-from pyUtils import MyLogger
 
 from ..filesystem import TrainingDatasetDirManager
-from ..utils import SCRIPTS_LOGGING_LVL
-
-my_logger = MyLogger(
-    logger_name= f'{__name__}',
-    logging_level= SCRIPTS_LOGGING_LVL,
-    file_path= 'yoloModelManager.log',
-    save_logs= False
-)
+from ..utils.config import my_logger
 
 
 @click.command()

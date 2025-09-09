@@ -3,16 +3,8 @@ from typing import Callable
 
 import cv2
 import numpy as np
-from pyUtils import MyLogger
 
-from ..utils import IMAGE_LOGGING_LVL, YOLO_IMAGE_HEIGHT, YOLO_IMAGE_WIDTH
-
-my_logger = MyLogger(
-    logger_name= f'{__name__}',
-    logging_level= IMAGE_LOGGING_LVL,
-    file_path= 'yoloModelManager.log',
-    save_logs= False
-)
+from ..utils.config import YOLO_IMAGE_HEIGHT, YOLO_IMAGE_WIDTH, my_logger
 
 
 class ImageProcessing:

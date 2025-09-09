@@ -7,19 +7,15 @@ import cv2
 import ultralytics  # Needed for setting log level
 from dotenv import load_dotenv
 from pyUtils import (ConfigFileManager, MyLogger, ProjectPathsDict,
-                     set_pyutils_logging_level)
+                     set_pyutils_logging_level, set_pyutils_logs_path,
+                     save_pyutils_logs)
 
 
 class EnvVars(Enum):
     IMAGES_PATH = 'IMAGES_PATH'
     MODELS_PATH = 'MODELS_PATH'
     DATASETS_PATH = 'DATASETS_PATH'
-    PYUTILS_LOGGING_LVL = 'PYUTILS_LOGGING_LVL'
-    FILESYSTEM_LOGGING_LVL = 'FILESYSTEM_LOGGING_LVL'
-    SCRIPTS_LOGGING_LVL = 'SCRIPTS_LOGGING_LVL'
-    IMAGE_LOGGING_LVL = 'IMAGE_LOGGING_LVL'
-    MODEL_LOGGING_LVL = 'MODEL_LOGGING_LVL'
-    CAMERA_LOGGING_LVL = 'CAMERA_LOGGING_LVL'
+    YOLO_LOGGING_LVL = 'YOLO_LOGGING_LVL'
     ULTRALYTICS_LOGGING_LVL = 'ULTRALYTICS_LOGGING_LVL'
 
 _MY_PACKAGE: ProjectPathsDict = ProjectPathsDict().set_app_path(Path(__file__).parents[2])
@@ -65,13 +61,15 @@ def get_logging_lvl_from_env(env_var_name: str) -> int:
         return int(env_var)
     except ValueError:
         return MyLogger.get_lvl_int(str(env_var))
-PYUTILS_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.PYUTILS_LOGGING_LVL.value)
-FILESYSTEM_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.FILESYSTEM_LOGGING_LVL.value)
-SCRIPTS_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.SCRIPTS_LOGGING_LVL.value)
-IMAGE_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.IMAGE_LOGGING_LVL.value)
-MODEL_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.MODEL_LOGGING_LVL.value)
-CAMERA_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.CAMERA_LOGGING_LVL.value)
+YOLO_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.YOLO_LOGGING_LVL.value)
 ULTRALYTICS_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.ULTRALYTICS_LOGGING_LVL.value)
 cv2.setLogLevel(0) #Default 3
 logging.getLogger('ultralytics').setLevel(ULTRALYTICS_LOGGING_LVL)
-set_pyutils_logging_level(PYUTILS_LOGGING_LVL)
+set_pyutils_logging_level(YOLO_LOGGING_LVL)
+
+my_logger = MyLogger(
+    logger_name= 'YoloModelManager',
+    logging_level= YOLO_LOGGING_LVL,
+    file_path= 'yoloModelManager.log',
+    save_logs= False
+)
