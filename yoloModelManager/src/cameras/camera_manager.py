@@ -234,6 +234,7 @@ class CameraManager(ABC):
             my_logger.error(f'ConnectionRefusedError: {msg}')
             raise ConnectionRefusedError(msg)
         try:
+            self._cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
             yield self._cap
         finally:
             self._cap.release()
@@ -413,7 +414,9 @@ class CameraManager(ABC):
     ) -> None:
         ret: bool
         self.last_frame: np.ndarray
-        ret, self.last_frame = cap.read()
+        for _ in range(2):
+            cap.grab()
+        ret, self.last_frame = cap.retrieve()
         if not ret:
             msg: str = 'Can\'t read frame.'
             my_logger.error(f'RuntimeError: {msg}')
