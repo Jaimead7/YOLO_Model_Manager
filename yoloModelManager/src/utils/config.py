@@ -7,16 +7,17 @@ import cv2
 import ultralytics  # Needed for setting log level
 from dotenv import load_dotenv
 from pyUtils import (ConfigFileManager, MyLogger, ProjectPathsDict,
-                     set_pyutils_logging_level, set_pyutils_logs_path,
-                     save_pyutils_logs)
+                     save_pyutils_logs, set_pyutils_logging_level,
+                     set_pyutils_logs_path)
 
 
 class EnvVars(Enum):
     IMAGES_PATH = 'IMAGES_PATH'
     MODELS_PATH = 'MODELS_PATH'
     DATASETS_PATH = 'DATASETS_PATH'
-    YOLO_LOGGING_LVL = 'YOLO_LOGGING_LVL'
+    LOGGING_LVL = 'LOGGING_LVL'
     ULTRALYTICS_LOGGING_LVL = 'ULTRALYTICS_LOGGING_LVL'
+
 
 _MY_PACKAGE: ProjectPathsDict = ProjectPathsDict().set_app_path(Path(__file__).parents[2])
 _MY_PACKAGE[ProjectPathsDict.DIST_PATH] = _MY_PACKAGE[ProjectPathsDict.APP_PATH] / 'dist'
@@ -54,22 +55,31 @@ RESULT_TEXT_THICKNESS: int = MY_CFG.model.result.text_thickness
 RESULT_CENTER_THICKNESS: int = MY_CFG.model.result.center_thickness
 
 # LOGGING LEVELS
-#TODO: change to pyUtils
-def get_logging_lvl_from_env(env_var_name: str) -> int:
-    env_var: str | int = getenv(env_var_name, logging.DEBUG)
-    try:
-        return int(env_var)
-    except ValueError:
-        return MyLogger.get_lvl_int(str(env_var))
-YOLO_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.YOLO_LOGGING_LVL.value)
-ULTRALYTICS_LOGGING_LVL: int = get_logging_lvl_from_env(EnvVars.ULTRALYTICS_LOGGING_LVL.value)
+LOGGING_LVL: int = MyLogger.get_logging_lvl_from_env(EnvVars.LOGGING_LVL.value)
+ULTRALYTICS_LOGGING_LVL: int = MyLogger.get_logging_lvl_from_env(EnvVars.ULTRALYTICS_LOGGING_LVL.value)
 cv2.setLogLevel(0) #Default 3
 logging.getLogger('ultralytics').setLevel(ULTRALYTICS_LOGGING_LVL)
-set_pyutils_logging_level(YOLO_LOGGING_LVL)
+set_pyutils_logging_level(LOGGING_LVL)
 
 my_logger = MyLogger(
     logger_name= 'YoloModelManager',
-    logging_level= YOLO_LOGGING_LVL,
+    logging_level= LOGGING_LVL,
     file_path= 'yoloModelManager.log',
     save_logs= False
 )
+
+def set_yolo_manager_logs_path(new_path: Path | str) -> None:
+    my_logger.logs_file_path = new_path
+    set_pyutils_logs_path(new_path)
+
+def save_yolo_manager_logs(value: bool) -> None:
+    my_logger.save_logs = value
+    save_pyutils_logs(value)
+
+def set_yolo_manager_logging_level(lvl: int = logging.DEBUG) -> None:
+    my_logger.set_logging_level(lvl)
+    set_pyutils_logging_level(lvl)
+
+set_yolo_manager_logging_level(logging.WARNING)
+set_yolo_manager_logs_path('yoloModelManager.log')
+set_yolo_manager_logging_level(LOGGING_LVL)
