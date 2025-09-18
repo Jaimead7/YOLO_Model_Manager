@@ -12,8 +12,7 @@ from ultralytics import YOLO
 
 from ..filesystem import TrainingDatasetDirManager
 from ..image import ImageProcessing
-from ..utils.config import (MODELS_PATH, ULTRALYTICS_LOGGING_LVL,
-                            my_logger)
+from ..utils.config import MODELS_PATH, ULTRALYTICS_LOGGING_LVL, my_logger
 from ..utils.data_types import ModelMetadataDict
 from .results import ResultTracker
 

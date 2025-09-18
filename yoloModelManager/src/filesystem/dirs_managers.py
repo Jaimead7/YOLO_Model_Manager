@@ -3,12 +3,12 @@ from random import shuffle
 from typing import Any, Optional
 
 import yaml
-from pyUtils import Styles
+from pyUtils import Styles, copy_files, unzip_dir
 
 from ..utils.config import DATASETS_PATH, IMAGES_PATH, my_logger
 from ..utils.data_types import DatasetDataDict, DatasetMetadataDict, ModelTasks
-from .dirs import check_dir_path, unzip_dir
-from .files import ALLOWED_IMAGES_EXTENSIONS, copy_files
+from .dirs import check_dir_path
+from .files import ALLOWED_IMAGES_EXTENSIONS
 
 
 class DatasetDirManager:

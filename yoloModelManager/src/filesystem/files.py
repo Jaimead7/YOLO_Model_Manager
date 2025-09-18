@@ -1,18 +1,16 @@
 from datetime import datetime, timezone
-from psutil import disk_usage
 from pathlib import Path
-from shutil import copy2
 from typing import Optional
 from uuid import uuid4
 
 import cv2
 import numpy as np
 import yaml
+from psutil import disk_usage
 from pyUtils import Styles
 
 from ..utils.config import IMAGES_PATH, my_logger
 from ..utils.data_types import DatasetMetadataDict
-
 
 ALLOWED_IMAGES_EXTENSIONS: set[str] = {
     '.png',
@@ -22,25 +20,6 @@ ALLOWED_IMAGES_EXTENSIONS: set[str] = {
     '.gif',
     '.tiff'
 }
-
-def copy_files(
-    files_list: list[Path],
-    destiny_dir: Path,
-    new_names: Optional[list[str]] = None
-) -> None:
-    if not destiny_dir.is_dir():
-        msg: str = f'"{destiny_dir}" does not exists.'
-        my_logger.error(f'NotADirectoryError: {msg}')
-        raise NotADirectoryError(msg)
-    if new_names is None:
-        new_names = [file.name for file in files_list]
-    destiny_files: list[Path] = [destiny_dir / new_name for new_name in new_names]
-    for source, destiny in zip(files_list, destiny_files):
-        if source.is_file():
-            copy2(source, destiny)
-            my_logger.debug(f'"{source.name}" copied to "{destiny}".', Styles.SUCCEED)
-        else:
-            my_logger.warning(f'"{source}" won\'t be copied. File doesn\'t exists.')
 
 def create_dataset_medatada_yaml(
     dir_path: Optional[Path],
@@ -66,7 +45,7 @@ def save_image(
         parents= True,
         exist_ok= True
     )
-    if disk_usage('/').percent < 80:
+    if disk_usage('/').percent < 100: #TODO: cahnge to 80
         if cv2.imwrite(str(image_path), image):
             my_logger.debug(f'New image saved to "{image_path}"', Styles.SUCCEED)
         else:
