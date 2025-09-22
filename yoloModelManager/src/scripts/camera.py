@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -5,7 +6,9 @@ import click
 
 from ..cameras import CameraManager, camera_manager_factory
 from ..image import ImageProcessing
-from ..utils.config import my_logger
+from ..utils.config import (LOGGING_LVL, my_logger, save_yolo_manager_logs,
+                            set_yolo_manager_logging_level,
+                            set_yolo_manager_logs_path)
 
 
 @click.command()
@@ -55,6 +58,10 @@ def image_adquisition(
     save_filters_in: Optional[str] = None,
     save_path: Optional[Path] = None
 ) -> None:
+    set_yolo_manager_logging_level(logging.WARNING)
+    set_yolo_manager_logs_path('yoloModelManager.log')
+    set_yolo_manager_logging_level(LOGGING_LVL)
+    save_yolo_manager_logs(True)
     my_logger.debug(f'Executed: image-adquisition -c {camera} -f {show_filters_in} -s {save_filters_in} -p {save_path}')
     show_filters: list[Callable] = [ImageProcessing.FILTERS[filter] for filter in show_filters_in]
     if save_filters_in is None:

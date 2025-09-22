@@ -63,9 +63,7 @@ set_pyutils_logging_level(LOGGING_LVL)
 
 my_logger = MyLogger(
     logger_name= 'YoloModelManager',
-    logging_level= LOGGING_LVL,
-    file_path= 'yoloModelManager.log',
-    save_logs= False
+    logging_level= LOGGING_LVL
 )
 
 def set_yolo_manager_logs_path(new_path: Path | str) -> None:
@@ -79,7 +77,3 @@ def save_yolo_manager_logs(value: bool) -> None:
 def set_yolo_manager_logging_level(lvl: int = logging.DEBUG) -> None:
     my_logger.set_logging_level(lvl)
     set_pyutils_logging_level(lvl)
-
-set_yolo_manager_logging_level(logging.WARNING)
-set_yolo_manager_logs_path('yoloModelManager.log')
-set_yolo_manager_logging_level(LOGGING_LVL)

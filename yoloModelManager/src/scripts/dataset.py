@@ -1,9 +1,12 @@
+import logging
 from pathlib import Path
 
 import click
 
 from ..filesystem import TrainingDatasetDirManager
-from ..utils.config import my_logger
+from ..utils.config import (LOGGING_LVL, my_logger, save_yolo_manager_logs,
+                            set_yolo_manager_logging_level,
+                            set_yolo_manager_logs_path)
 
 
 @click.command()
@@ -61,6 +64,10 @@ def split_dataset(
     validation: float = 0.2,
     test: float = 0.1
 ) -> None:
+    set_yolo_manager_logging_level(logging.WARNING)
+    set_yolo_manager_logs_path('yoloModelManager.log')
+    set_yolo_manager_logging_level(LOGGING_LVL)
+    save_yolo_manager_logs(True)
     my_logger.debug(f'Executed: split-dataset -d {data_source} -i {images_source} -v {validation} -t {test}')
     if validation + test > 0.5:
         msg: str = 'Validation + test ratio should be lower than 50% of the dataset.'

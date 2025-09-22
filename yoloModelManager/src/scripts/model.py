@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Optional
 
@@ -6,7 +7,9 @@ import click
 from ..cameras import CameraManager, camera_manager_factory
 from ..filesystem import TrainingDatasetDirManager
 from ..model import ModelManager
-from ..utils.config import my_logger
+from ..utils.config import (LOGGING_LVL, my_logger, save_yolo_manager_logs,
+                            set_yolo_manager_logging_level,
+                            set_yolo_manager_logs_path)
 
 
 @click.command()
@@ -42,6 +45,10 @@ def test_model(
     camera: int,
     save_path: Optional[Path] = None
 ) -> None:
+    set_yolo_manager_logging_level(logging.WARNING)
+    set_yolo_manager_logs_path('yoloModelManager.log')
+    set_yolo_manager_logging_level(LOGGING_LVL)
+    save_yolo_manager_logs(True)
     my_logger.debug(f'Executed: test-model -m {model_name} -c {camera} -p {save_path}')
     model: ModelManager = ModelManager(model_name)
     camera_manager: CameraManager = camera_manager_factory(camera)
@@ -99,6 +106,10 @@ def train_model(
     dataset: Path,
     epochs: int,
 ) -> None:
+    set_yolo_manager_logging_level(logging.WARNING)
+    set_yolo_manager_logs_path('yoloModelManager.log')
+    set_yolo_manager_logging_level(LOGGING_LVL)
+    save_yolo_manager_logs(True)
     my_logger.debug(f'Executed: train-model -n {name} -m {base_model} -d {dataset} -e {epochs}')
     dataset_dir: TrainingDatasetDirManager = TrainingDatasetDirManager(
         dataset_dir= dataset
